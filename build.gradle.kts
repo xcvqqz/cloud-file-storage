@@ -30,6 +30,8 @@ dependencies {
     testImplementation("org.testcontainers:postgresql")
     implementation("org.liquibase:liquibase-core")
 
+
+
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
 
@@ -42,6 +44,9 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testCompileOnly("org.projectlombok:lombok")
     testAnnotationProcessor("org.projectlombok:lombok")
+
+    implementation("org.mapstruct:mapstruct:1.6.3")
+    annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
 
 }
 

@@ -1,6 +1,7 @@
 package io.github.xcvqqz.cloud_file_storage.service;
 
 
+import io.github.xcvqqz.cloud_file_storage.dto.UserRegistrationDTO;
 import io.github.xcvqqz.cloud_file_storage.entity.User;
 import io.github.xcvqqz.cloud_file_storage.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,8 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User save(User user){
+    public User save(UserRegistrationDTO userRegistrationDTO){
+        if(userRegistrationDTO != null || userRegistrationDTO.)
        return userRepository.save(user);
     }
 
