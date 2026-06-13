@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/cfs_db
+    username: postgres
+    password: 111
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 30000
+  session:
+    jdbc:
+      initialize-schema: always
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
+
+
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
+  liquibase:
+    enabled: false

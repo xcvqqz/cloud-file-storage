@@ -18,16 +18,20 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-configuration-processor")
 
 
-    implementation("org.springframework.session:spring-session-jdbc")
+   //implementation("org.springframework.session:spring-session-jdbc")
     implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
 
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
+    implementation("org.postgresql:postgresql:42.7.3")
 
-    runtimeOnly("org.postgresql:postgresql")
+//    runtimeOnly("org.postgresql:postgresql")
     testImplementation("org.testcontainers:postgresql")
     implementation("org.liquibase:liquibase-core")
+
+    compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
 
     // Для тестирования
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -36,13 +40,8 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.springframework.security:spring-security-test")
-
-
-    implementation("org.projectlombok:lombok")
-
-
-
-
+    testCompileOnly("org.projectlombok:lombok")
+    testAnnotationProcessor("org.projectlombok:lombok")
 
 }
 

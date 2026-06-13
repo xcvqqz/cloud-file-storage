@@ -2,7 +2,7 @@ package io.github.xcvqqz.cloud_file_storage.service;
 
 
 import io.github.xcvqqz.cloud_file_storage.entity.User;
-import io.github.xcvqqz.cloud_file_storage.repository.AbstractJpaRepository;
+import io.github.xcvqqz.cloud_file_storage.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,19 +13,19 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class UserService {
 
-    private final AbstractJpaRepository abstractJpaRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    public UserService(AbstractJpaRepository abstractJpaRepository) {
-        this.abstractJpaRepository = abstractJpaRepository;
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     public List<User> findAll(){
-        return abstractJpaRepository.findAll();
+        return userRepository.findAll();
     }
 
     public User save(User user){
-       return abstractJpaRepository.save(user);
+       return userRepository.save(user);
     }
 
 
