@@ -1,6 +1,7 @@
 package io.github.xcvqqz.cloud_file_storage.mapper;
 
 
+import io.github.xcvqqz.cloud_file_storage.dto.UserAuthDTO;
 import io.github.xcvqqz.cloud_file_storage.dto.UserRegistrationDTO;
 import io.github.xcvqqz.cloud_file_storage.entity.User;
 import org.mapstruct.Mapper;
@@ -10,7 +11,6 @@ public interface UserMapper {
 
     User registrationToEntity(UserRegistrationDTO userRegistrationDTO);
 
-
-//    User authToEntity(UserAuthDTO userAuthDTO);
+    User authToEntity(UserAuthDTO userAuthDTO);
 
 }

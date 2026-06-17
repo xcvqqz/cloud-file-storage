@@ -1,7 +1,7 @@
 package io.github.xcvqqz.cloud_file_storage.controller;
 
 
-import io.github.xcvqqz.cloud_file_storage.security.UserDetailsServiceImpl;
+import io.github.xcvqqz.cloud_file_storage.service.UserDetailsServiceImpl;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
