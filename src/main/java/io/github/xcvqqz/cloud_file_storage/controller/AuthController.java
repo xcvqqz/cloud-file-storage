@@ -19,12 +19,6 @@ public class AuthController {
     private UserDetailsServiceImpl userDetailsService;
     private UserService userService;
 
-
-//    @GetMapping("/sign-in")
-//    public ResponseEntity<UserAuthResponse> signIn(@Valid @RequestBody UserAuthenticationRequest userAuthenticationRequest) {
-//        return ResponseEntity.status(HttpStatus.OK).body(userService.find(userAuthenticationRequest));
-//    }
-
     @GetMapping("/sign-in")
     public ResponseEntity<UserAuthResponse> signIn(@Valid @RequestBody UserAuthenticationRequest userAuthenticationRequest) {
         return ResponseEntity.status(HttpStatus.OK).body(userService.find(userAuthenticationRequest));
