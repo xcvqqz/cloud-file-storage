@@ -1,16 +1,19 @@
 package io.github.xcvqqz.cloud_file_storage.mapper;
 
 
-import io.github.xcvqqz.cloud_file_storage.dto.UserAuthDTO;
-import io.github.xcvqqz.cloud_file_storage.dto.UserRegistrationDTO;
+import io.github.xcvqqz.cloud_file_storage.dto.request.UserAuthenticationRequest;
+import io.github.xcvqqz.cloud_file_storage.dto.request.UserRegistrationRequest;
+import io.github.xcvqqz.cloud_file_storage.dto.response.UserAuthResponse;
 import io.github.xcvqqz.cloud_file_storage.entity.User;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
-    User registrationToEntity(UserRegistrationDTO userRegistrationDTO);
+    User registrationToEntity(UserRegistrationRequest userRegistrationRequest);
 
-    User authToEntity(UserAuthDTO userAuthDTO);
+    User authToEntity(UserAuthenticationRequest userAuthenticationRequest);
+
+    UserAuthResponse entityToAuth(User user);
 
 }
