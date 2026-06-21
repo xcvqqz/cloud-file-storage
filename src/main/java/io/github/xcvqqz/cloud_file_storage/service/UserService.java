@@ -29,7 +29,6 @@ public class UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-    private final UserDetailsService userDetailsService;
 
 
     public List<User> findAll(){
@@ -40,8 +39,11 @@ public class UserService {
     @Transactional(readOnly = false)
     public UserAuthResponse save(UserRegistrationRequest userRegistrationRequest){
 
-        User newUser = userMapper.registrationToEntity(userRegistrationRequest);
-        newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
+        User newUser = User
+                .builder()
+                .name(userRegistrationRequest.name())
+                .password(passwordEncoder.encode(userRegistrationRequest.password()))
+                .build();
 
         try{
           userRepository.save(newUser);
