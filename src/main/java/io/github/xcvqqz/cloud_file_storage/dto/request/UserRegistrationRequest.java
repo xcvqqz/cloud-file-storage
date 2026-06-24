@@ -1,8 +1,10 @@
 package io.github.xcvqqz.cloud_file_storage.dto.request;
 
+import io.github.xcvqqz.cloud_file_storage.annotation.PasswordMatches;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+@PasswordMatches
 public record UserRegistrationRequest(
 
         @NotBlank(message = "login shouldn't empty or null")
