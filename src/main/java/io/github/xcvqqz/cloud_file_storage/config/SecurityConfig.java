@@ -1,27 +1,26 @@
 package io.github.xcvqqz.cloud_file_storage.config;
 
 
-import io.github.xcvqqz.cloud_file_storage.service.UserDetailsServiceImpl;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.List;
+
 
 @Configuration
 @EnableWebSecurity
@@ -43,15 +42,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/user/**").hasRole("USER")
                         .anyRequest().authenticated())
 
-                .formLogin(form -> form
-
-                        .loginPage("/api/auth/sign-in")
-                        .loginProcessingUrl("/api/auth/sign-in")
-                        .usernameParameter("name")
-                        .passwordParameter("password")
-                        .defaultSuccessUrl("/api/user/me", true)
-//                        .failureUrl("/login?error=true").permitAll()
-                )
+//                .formLogin(form -> form
+//
+//                        .loginPage("/api/auth/sign-in")
+//                        .loginProcessingUrl("/api/auth/sign-in")
+//                        .usernameParameter("name")
+//                        .passwordParameter("password")
+//                        .defaultSuccessUrl("/api/user/me", true).permitAll()
+//                )
 
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/sign-out")
@@ -62,6 +60,8 @@ public class SecurityConfig {
                         .permitAll()
                 )
 
+                .userDetailsService(userDetailsService)
+
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.sendRedirect("/api/auth/sign-in");
@@ -70,13 +70,23 @@ public class SecurityConfig {
         return http.build();
     }
 
+//    @Bean
+//    public DaoAuthenticationProvider authenticationProvider(
+//            UserDetailsService userDetailsService,
+//            PasswordEncoder passwordEncoder) {
+//        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+//        provider.setPasswordEncoder(passwordEncoder);
+//        provider.setUserDetailsService(userDetailsService);
+//        return provider;
+//    }
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider(){
-        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
-        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
-        return daoAuthenticationProvider;
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider =
+                new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
     }
 
     @Bean

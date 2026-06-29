@@ -19,11 +19,10 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: false
         current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
-
-
   mvc:
     hiddenmethod:
       filter:
         enabled: true
   liquibase:
-    enabled: false
+    enabled: true
+    change-log: classpath:/db/changelog/db.changelog-master.yaml

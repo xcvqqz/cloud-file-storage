@@ -14,6 +14,6 @@ public interface UserMapper {
 
     User authToEntity(UserAuthenticationRequest userAuthenticationRequest);
 
-    UserAuthResponse entityToAuth(User user);
+    UserAuthResponse entityToAuthResponse(User user);
 
 }

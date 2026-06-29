@@ -1,5 +1,6 @@
-package io.github.xcvqqz.cloud_file_storage.service;
+package io.github.xcvqqz.cloud_file_storage.security;
 
+import io.github.xcvqqz.cloud_file_storage.entity.User;
 import io.github.xcvqqz.cloud_file_storage.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,13 +10,17 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class UserDetailsServiceImpl implements UserDetailsService {       //является классом обёрткой над нашей сущность для аутентификации
+public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByName(username).orElseThrow(() ->
+        User user = userRepository.findByName(username).orElseThrow(() ->
                 new UsernameNotFoundException(String.format("пользователь с именем %s не найден", username)));
+
+        return new UserDetailsImpl(user);
+
     }
+
 }

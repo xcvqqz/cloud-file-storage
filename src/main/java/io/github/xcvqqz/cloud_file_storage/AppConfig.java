@@ -1,4 +1,4 @@
-package io.github.xcvqqz.cloud_file_storage.config;
+package io.github.xcvqqz.cloud_file_storage;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
