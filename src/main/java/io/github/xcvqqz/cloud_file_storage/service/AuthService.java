@@ -31,12 +31,12 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
-    public List<User> findAll(){
+    public List<User> findAll() {
         return userRepository.findAll();
     }
 
     @Transactional(readOnly = false)
-    public UserAuthResponse save(UserRegistrationRequest userRegistrationRequest){
+    public UserAuthResponse save(UserRegistrationRequest userRegistrationRequest) {
 
         User newUser = User
                 .builder()
@@ -45,16 +45,16 @@ public class AuthService {
                 .roles(setDefaultRole())
                 .build();
 
-        try{
+        try {
             userRepository.save(newUser);
-        } catch (DataIntegrityViolationException e){
+        } catch (DataIntegrityViolationException e) {
             System.out.println("Такой пользователь уже создан");
         }
         return userMapper.entityToAuthResponse(newUser);
     }
 
 
-    public UserAuthResponse find(UserAuthenticationRequest userAuthenticationRequest){
+    public UserAuthResponse find(UserAuthenticationRequest userAuthenticationRequest) {
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -68,10 +68,17 @@ public class AuthService {
     }
 
     private Set<Role> setDefaultRole() {
-        return Set.of(Role
-                .builder()
+//        return Set.of(Role
+//                .builder()
+//                .name(RoleName.USER)
+//                .build());
+
+        Role role = Role.builder()
                 .name(RoleName.USER)
-                .build());
+                .build();
+
+
+
     }
 
 

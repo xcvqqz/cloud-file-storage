@@ -5,9 +5,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 
 @SpringBootApplication              //эта аннотация содержит @ComponentScan, @Configuration (ВСЁ СКАНИРУЕТ)
-public class AppConfig {
+public class CloudFileStorageRunConfiguration {
 
     public static void main(String[] args) {
-        SpringApplication.run(AppConfig.class, args);
+        SpringApplication.run(CloudFileStorageRunConfiguration.class, args);
     }
 }

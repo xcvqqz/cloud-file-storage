@@ -1,35 +1,54 @@
 package io.github.xcvqqz.cloud_file_storage.security;
 
 import io.github.xcvqqz.cloud_file_storage.entity.User;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class UserDetailsImpl implements UserDetails {
 
-    private final User user;
+    private Long id;
+    private String name;
+    private String password;
+    private Collection<? extends GrantedAuthority> authorities;
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return  user.getRoles()
+    protected static UserDetailsImpl build(User user){
+
+        List<GrantedAuthority> authorities = user.getRoles()
                 .stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName().getAuthority()))
                 .collect(Collectors.toList());
+
+        return new UserDetailsImpl(
+                user.getId(),
+                user.getName(),
+                user.getPassword(),
+                authorities
+        );
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return authorities;
     }
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return this.password;
     }
 
     @Override
     public String getUsername() {
-        return this.user.getName();
+        return this.name;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package io.github.xcvqqz.cloud_file_storage.config;
+package io.github.xcvqqz.cloud_file_storage.security;
 
 
 import lombok.RequiredArgsConstructor;
@@ -34,13 +34,17 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
 
                         .requestMatchers("/css/**", "/html/**", "/images/**").permitAll()
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/user/**").hasRole("USER")
-                        .anyRequest().authenticated())
+//                        .requestMatchers("/api/auth/**").permitAll()
+//                        .requestMatchers("/api/user/**").hasRole("USER")
+                        .anyRequest().permitAll());
+
+//                .formLogin(form -> form.disable())  // ← Отключить форму логина если используете JWT
+//                .httpBasic(basic -> basic.disable());
 
 //                .formLogin(form -> form
 //
@@ -51,21 +55,21 @@ public class SecurityConfig {
 //                        .defaultSuccessUrl("/api/user/me", true).permitAll()
 //                )
 
-                .logout(logout -> logout
-                        .logoutUrl("/api/auth/sign-out")
-                        .logoutSuccessUrl("/api/auth/sign-in")
-                        .deleteCookies("JSESSIONID")
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
-                        .permitAll()
-                )
-
-                .userDetailsService(userDetailsService)
-
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((request, response, authException) -> {
-                            response.sendRedirect("/api/auth/sign-in");
-                        }));
+//                .logout(logout -> logout
+//                        .logoutUrl("/api/auth/sign-out")
+//                        .logoutSuccessUrl("/api/auth/sign-in")
+//                        .deleteCookies("JSESSIONID")
+//                        .invalidateHttpSession(true)
+//                        .clearAuthentication(true)
+//                        .permitAll()
+//                )
+//
+//                .userDetailsService(userDetailsService)
+//
+//                .exceptionHandling(ex -> ex
+//                        .authenticationEntryPoint((request, response, authException) -> {
+//                            response.sendRedirect("/api/auth/sign-in");
+//                        }));
 
         return http.build();
     }
