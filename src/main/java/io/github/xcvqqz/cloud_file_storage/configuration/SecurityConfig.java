@@ -1,4 +1,4 @@
-package io.github.xcvqqz.cloud_file_storage.security;
+package io.github.xcvqqz.cloud_file_storage.configuration;
 
 
 import lombok.RequiredArgsConstructor;

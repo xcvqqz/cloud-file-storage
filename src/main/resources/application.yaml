@@ -26,3 +26,7 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:/db/changelog/db.changelog-master.yaml
+  app:
+    admin:
+      name: "admin"
+      password: "12345m"

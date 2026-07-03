@@ -6,6 +6,7 @@ import io.github.xcvqqz.cloud_file_storage.dto.response.UserAuthResponse;
 import io.github.xcvqqz.cloud_file_storage.entity.Role;
 import io.github.xcvqqz.cloud_file_storage.entity.RoleName;
 import io.github.xcvqqz.cloud_file_storage.entity.User;
+import io.github.xcvqqz.cloud_file_storage.exception.RolesNotFoundException;
 import io.github.xcvqqz.cloud_file_storage.mapper.UserMapper;
 import io.github.xcvqqz.cloud_file_storage.repository.RoleRepository;
 import io.github.xcvqqz.cloud_file_storage.repository.UserRepository;
@@ -18,6 +19,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -27,6 +30,7 @@ import java.util.Set;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
@@ -68,16 +72,12 @@ public class AuthService {
     }
 
     private Set<Role> setDefaultRole() {
-//        return Set.of(Role
-//                .builder()
-//                .name(RoleName.USER)
-//                .build());
 
-        Role role = Role.builder()
-                .name(RoleName.USER)
-                .build();
+        Role role = roleRepository
+                .findByName(RoleName.USER.getAuthority())
+                .orElseThrow(()-> new RolesNotFoundException("Roles Not Found"));
 
-
+        return new HashSet<Role>(Collections.singleton(role));
 
     }
 
