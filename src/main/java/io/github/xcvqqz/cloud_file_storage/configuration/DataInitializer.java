@@ -48,7 +48,7 @@ public class DataInitializer implements CommandLineRunner {
 
     private Role createRoleIfNotExist(RoleName roleName) {
         return roleRepository
-                .findByName(roleName.getAuthority())
+                .findByName(roleName)
                 .orElseGet(() -> {
                     log.info("Creating role: {}", roleName);
                     Role newRole = Role.builder()

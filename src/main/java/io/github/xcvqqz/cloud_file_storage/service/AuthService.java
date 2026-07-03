@@ -74,7 +74,7 @@ public class AuthService {
     private Set<Role> setDefaultRole() {
 
         Role role = roleRepository
-                .findByName(RoleName.USER.getAuthority())
+                .findByName(RoleName.USER)
                 .orElseThrow(()-> new RolesNotFoundException("Roles Not Found"));
 
         return new HashSet<Role>(Collections.singleton(role));
