@@ -7,7 +7,7 @@ import io.github.xcvqqz.cloud_file_storage.entity.Role;
 import io.github.xcvqqz.cloud_file_storage.entity.RoleName;
 import io.github.xcvqqz.cloud_file_storage.entity.User;
 import io.github.xcvqqz.cloud_file_storage.exception.RolesNotFoundException;
-import io.github.xcvqqz.cloud_file_storage.mapper.UserMapper;
+import io.github.xcvqqz.cloud_file_storage.mapper.AuthMapper;
 import io.github.xcvqqz.cloud_file_storage.repository.RoleRepository;
 import io.github.xcvqqz.cloud_file_storage.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final UserMapper userMapper;
+    private final AuthMapper authMapper;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
@@ -54,7 +54,7 @@ public class AuthService {
         } catch (DataIntegrityViolationException e) {
             System.out.println("Такой пользователь уже создан");
         }
-        return userMapper.entityToAuthResponse(newUser);
+        return authMapper.entityToResponse(newUser);
     }
 
 
@@ -66,9 +66,7 @@ public class AuthService {
                         userAuthenticationRequest.password()
                 ));
 
-        User authenticatedUser = (User) authentication.getPrincipal();
-
-        return userMapper.entityToAuthResponse(authenticatedUser);
+        return authMapper.authenticationToResponse(authentication);
     }
 
     private Set<Role> setDefaultRole() {

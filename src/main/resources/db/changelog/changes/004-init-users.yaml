@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - changeSet:
+        id: 004-insert-test-users
+        author: Maxim
+        changes:
+          - insert:
+              tableName: users
+              columns:
+                - column:
+                    name: name
+                    value: "maximm"
+                - column:
+                    name: password
+                    value: "12345"
+          - insert:
+              tableName: users
+              columns:
+                - column:
+                    name: name
+                    value: "maximm"
+                - column:
+                    name: password
+                    value: "12345"

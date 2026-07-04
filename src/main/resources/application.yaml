@@ -13,7 +13,7 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create-drop
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -26,6 +26,7 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:/db/changelog/db.changelog-master.yaml
+    clear-checksums: true
 
 app:
   admin:

@@ -19,7 +19,10 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "users")
+@Table(name = "users",
+uniqueConstraints = {
+        @UniqueConstraint(name = "uk_name_user", columnNames = "name")
+})
 public class User {
 
     @Id
@@ -30,7 +33,7 @@ public class User {
     @Column(length = 30, nullable = false, unique = true, updatable = false)
     private String name;
 
-    @Column(length = 30, nullable = false)
+    @Column(length = 255, nullable = false)
     private String password;
 
     @ManyToMany(fetch = FetchType.LAZY)
