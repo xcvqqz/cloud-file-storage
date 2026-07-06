@@ -19,10 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -35,8 +32,16 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
-    public List<User> findAll() {
-        return userRepository.findAll();
+    public List<UserAuthResponse> findAll() {
+        List<UserAuthResponse> responses = new ArrayList<>();
+        List<User> users = userRepository.findAll();
+
+        for(User user : users){
+            responses.add(authMapper.entityToResponse(user));
+        }
+
+        return responses;
+
     }
 
     @Transactional(readOnly = false)
@@ -68,6 +73,7 @@ public class AuthService {
 
         return authMapper.authenticationToResponse(authentication);
     }
+
 
     private Set<Role> setDefaultRole() {
 

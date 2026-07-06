@@ -2,40 +2,97 @@ package io.github.xcvqqz.cloud_file_storage.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.xcvqqz.cloud_file_storage.dto.response.ErrorResponse;
+import io.github.xcvqqz.cloud_file_storage.exception.PasswordMismatchException;
 import io.github.xcvqqz.cloud_file_storage.exception.RolesNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
+
+import static io.github.xcvqqz.cloud_file_storage.handler.CustomAccessDeniedHandler.FORBIDDEN_ERROR_MESSAGE;
 
 @Slf4j
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
-    private static final String ERROR_VIEW = "error";
-    private static final String HOME_REDIRECT = "redirect:/home";
-    private static final String SIGN_UP_REDIRECT = "redirect:/sign-up";
-    private static final String SIGN_IN_REDIRECT = "redirect:/sign-in";
-    private static final String GLOBAL_ERROR_ATTR = "global_error";
-    
+    private final static String MISSMATCH_PASSWORDS_ERROR = "Your password and confirm password do not match";
 
-    @ExceptionHandler({RolesNotFoundException.class})
-    public ResponseEntity<ErrorResponse> handleNotFound(Exception ex,  HttpServletRequest request) {
+
+    @ExceptionHandler(RolesNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFoundException(RolesNotFoundException ex,  HttpServletRequest request) {
 
         log.warn("Entity not found: URI={}, type={}, msg={}",
                 request.getRequestURI(), ex.getClass().getSimpleName(), ex.getMessage());
 
         ErrorResponse errorResponse = new ErrorResponse
-                (404, "Not Found", "Пользователь не найден", "путь", LocalDateTime.now());
+                        (HttpStatus.NOT_FOUND.value(),
+                        HttpStatus.NOT_FOUND.name(),
+                        "Пользователь не найден",
+                        request.getRequestURI(),
+                        LocalDateTime.now());
 
-        return ResponseEntity.status(404).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
+
+        log.warn("Access denied: URI={}, type={}, msg={}",
+                request.getRequestURI(), ex.getClass().getSimpleName(), ex.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse
+                        (HttpStatus.FORBIDDEN.value(),
+                        HttpStatus.FORBIDDEN.name(),
+                        FORBIDDEN_ERROR_MESSAGE,
+                        request.getRequestURI(),
+                        LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex, HttpServletRequest request) {
+
+        log.warn("Bad Request: URI={}, type={}, msg={}",
+                request.getRequestURI(), ex.getClass().getSimpleName(), ex.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse
+                (HttpStatus.BAD_REQUEST.value(),
+                        HttpStatus.BAD_REQUEST.name(),
+                        MISSMATCH_PASSWORDS_ERROR,
+                        request.getRequestURI(),
+                        LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(DataIntegrityViolationException ex, HttpServletRequest request) {
+
+        log.warn("Conflict: URI={}, type={}, msg={}",
+                request.getRequestURI(), ex.getClass().getSimpleName(), ex.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse
+                (HttpStatus.CONFLICT.value(),
+                        HttpStatus.CONFLICT.name(),
+                        MISSMATCH_PASSWORDS_ERROR,
+                        request.getRequestURI(),
+                        LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
 
 
 }

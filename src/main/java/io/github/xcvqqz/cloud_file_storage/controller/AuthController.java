@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @AllArgsConstructor
@@ -19,7 +21,7 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @GetMapping("/sign-in")
+    @PostMapping("/sign-in")
     public ResponseEntity<UserAuthResponse> signIn(@Valid @RequestBody UserAuthenticationRequest userAuthenticationRequest) {
         return ResponseEntity.status(HttpStatus.OK).body(authService.find(userAuthenticationRequest));
     }
@@ -28,11 +30,6 @@ public class AuthController {
     public ResponseEntity<UserAuthResponse> signUp(@Valid @RequestBody UserRegistrationRequest userRegistrationRequest) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.save(userRegistrationRequest));
     }
-
-//    @GetMapping("/sign-out")
-//    public String logout(@ModelAttribute("user") UserRegistrationDTO userRegistration) {
-//        return SIGN_UP_VIEW;
-//    }
 
 
 

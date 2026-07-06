@@ -1,6 +1,9 @@
 package io.github.xcvqqz.cloud_file_storage.configuration;
 
 
+import io.github.xcvqqz.cloud_file_storage.handler.CustomAccessDeniedHandler;
+import io.github.xcvqqz.cloud_file_storage.handler.CustomAuthenticationEntryPoint;
+import io.github.xcvqqz.cloud_file_storage.handler.CustomLogoutSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,60 +32,49 @@ import java.util.List;
 public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final CustomLogoutSuccessHandler logoutSuccessHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                .exceptionHandling(exception ->
+                        exception
+                                .authenticationEntryPoint(authenticationEntryPoint)
+                                .accessDeniedHandler(accessDeniedHandler))
+
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
                 .authorizeHttpRequests(auth -> auth
 
                         .requestMatchers("/css/**", "/html/**", "/images/**").permitAll()
-//                        .requestMatchers("/api/auth/**").permitAll()
-//                        .requestMatchers("/api/user/**").hasRole("USER")
-                        .anyRequest().permitAll());
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/user/**").hasRole("USER")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .anyRequest().permitAll())
 
 //                .formLogin(form -> form.disable())  // ← Отключить форму логина если используете JWT
 //                .httpBasic(basic -> basic.disable());
 
-//                .formLogin(form -> form
-//
-//                        .loginPage("/api/auth/sign-in")
-//                        .loginProcessingUrl("/api/auth/sign-in")
-//                        .usernameParameter("name")
-//                        .passwordParameter("password")
-//                        .defaultSuccessUrl("/api/user/me", true).permitAll()
-//                )
 
-//                .logout(logout -> logout
-//                        .logoutUrl("/api/auth/sign-out")
-//                        .logoutSuccessUrl("/api/auth/sign-in")
-//                        .deleteCookies("JSESSIONID")
-//                        .invalidateHttpSession(true)
-//                        .clearAuthentication(true)
-//                        .permitAll()
-//                )
+                .logout(logout -> logout
+                        .logoutUrl("/api/auth/sign-out")
+                        .logoutSuccessHandler(logoutSuccessHandler)
+                        .deleteCookies("JSESSIONID")
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .permitAll()
+                );
 //
 //                .userDetailsService(userDetailsService)
-//
-//                .exceptionHandling(ex -> ex
-//                        .authenticationEntryPoint((request, response, authException) -> {
-//                            response.sendRedirect("/api/auth/sign-in");
-//                        }));
+
 
         return http.build();
     }
 
-//    @Bean
-//    public DaoAuthenticationProvider authenticationProvider(
-//            UserDetailsService userDetailsService,
-//            PasswordEncoder passwordEncoder) {
-//        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-//        provider.setPasswordEncoder(passwordEncoder);
-//        provider.setUserDetailsService(userDetailsService);
-//        return provider;
-//    }
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
