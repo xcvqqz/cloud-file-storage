@@ -1,9 +1,9 @@
 package io.github.xcvqqz.cloud_file_storage.configuration;
 
 
-import io.github.xcvqqz.cloud_file_storage.handler.CustomAccessDeniedHandler;
-import io.github.xcvqqz.cloud_file_storage.handler.CustomAuthenticationEntryPoint;
-import io.github.xcvqqz.cloud_file_storage.handler.CustomLogoutSuccessHandler;
+import io.github.xcvqqz.cloud_file_storage.security.handler.CustomAccessDeniedHandler;
+import io.github.xcvqqz.cloud_file_storage.security.handler.CustomAuthenticationEntryPoint;
+import io.github.xcvqqz.cloud_file_storage.security.handler.CustomLogoutSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -56,10 +56,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().permitAll())
 
-//                .formLogin(form -> form.disable())  // ← Отключить форму логина если используете JWT
-//                .httpBasic(basic -> basic.disable());
-
-
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/sign-out")
                         .logoutSuccessHandler(logoutSuccessHandler)
@@ -68,8 +64,6 @@ public class SecurityConfig {
                         .clearAuthentication(true)
                         .permitAll()
                 );
-//
-//                .userDetailsService(userDetailsService)
 
 
         return http.build();

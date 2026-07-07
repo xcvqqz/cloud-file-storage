@@ -1,9 +1,9 @@
 package io.github.xcvqqz.cloud_file_storage.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.xcvqqz.cloud_file_storage.dto.response.ErrorResponse;
-import io.github.xcvqqz.cloud_file_storage.exception.PasswordMismatchException;
+import io.github.xcvqqz.cloud_file_storage.exception.DataBaseException;
 import io.github.xcvqqz.cloud_file_storage.exception.RolesNotFoundException;
+import io.github.xcvqqz.cloud_file_storage.exception.UserAlreadyExistsException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,14 +11,12 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 
-import static io.github.xcvqqz.cloud_file_storage.handler.CustomAccessDeniedHandler.FORBIDDEN_ERROR_MESSAGE;
 
 @Slf4j
 @RestControllerAdvice
@@ -26,6 +24,7 @@ import static io.github.xcvqqz.cloud_file_storage.handler.CustomAccessDeniedHand
 public class GlobalExceptionHandler {
 
     private final static String MISSMATCH_PASSWORDS_ERROR = "Your password and confirm password do not match";
+    private final static String FORBIDDEN_ERROR_MESSAGE = "You are not authorized to access this profile";
 
 
     @ExceptionHandler(RolesNotFoundException.class)
@@ -77,8 +76,8 @@ public class GlobalExceptionHandler {
     }
 
 
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(DataIntegrityViolationException ex, HttpServletRequest request) {
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleUserAlreadyExistsExceptionException(UserAlreadyExistsException ex, HttpServletRequest request) {
 
         log.warn("Conflict: URI={}, type={}, msg={}",
                 request.getRequestURI(), ex.getClass().getSimpleName(), ex.getMessage());
@@ -86,7 +85,23 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse
                 (HttpStatus.CONFLICT.value(),
                         HttpStatus.CONFLICT.name(),
-                        MISSMATCH_PASSWORDS_ERROR,
+                        ex.getMessage(),
+                        request.getRequestURI(),
+                        LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(DataBaseException.class)
+    public ResponseEntity<ErrorResponse> handleDataBaseException(DataBaseException ex, HttpServletRequest request) {
+
+        log.error("DataBase error: URI={}, type={}, msg={}",
+                request.getRequestURI(), ex.getClass().getSimpleName(), ex.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse
+                (HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        HttpStatus.INTERNAL_SERVER_ERROR.name(),
+                        ex.getMessage(),
                         request.getRequestURI(),
                         LocalDateTime.now());
 
