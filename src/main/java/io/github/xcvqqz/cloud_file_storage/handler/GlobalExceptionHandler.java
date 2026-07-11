@@ -2,6 +2,7 @@ package io.github.xcvqqz.cloud_file_storage.handler;
 
 import io.github.xcvqqz.cloud_file_storage.dto.response.ErrorResponse;
 import io.github.xcvqqz.cloud_file_storage.exception.DataBaseException;
+import io.github.xcvqqz.cloud_file_storage.exception.PasswordMismatchException;
 import io.github.xcvqqz.cloud_file_storage.exception.RolesNotFoundException;
 import io.github.xcvqqz.cloud_file_storage.exception.UserAlreadyExistsException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,12 +11,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.nio.file.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.access.AccessDeniedException;
+
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -23,9 +29,9 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
-    private final static String MISSMATCH_PASSWORDS_ERROR = "Your password and confirm password do not match";
-    private final static String FORBIDDEN_ERROR_MESSAGE = "You are not authorized to access this profile";
-
+    private static final String MISSMATCH_PASSWORDS_ERROR = "Your password and confirm password do not match";
+    private static final String FORBIDDEN_ERROR_MESSAGE = "You are not authorized to access this profile";
+    private static final String INTERNAL_SERVER_ERROR_MESSAGE = "An unexpected error occurred. Please try again later";
 
     @ExceptionHandler(RolesNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFoundException(RolesNotFoundException ex,  HttpServletRequest request) {
@@ -63,6 +69,28 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex, HttpServletRequest request) {
 
         log.warn("Bad Request: URI={}, type={}, msg={}",
+                request.getRequestURI(), ex.getClass().getSimpleName(), ex.getMessage());
+
+        List<String> errorMessages = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(FieldError::getDefaultMessage)
+                .collect(Collectors.toList());
+
+        ErrorResponse errorResponse = new ErrorResponse
+                (HttpStatus.BAD_REQUEST.value(),
+                        HttpStatus.BAD_REQUEST.name(),
+                        String.join(", ", errorMessages),
+                        request.getRequestURI(),
+                        LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(PasswordMismatchException.class)
+    public ResponseEntity<ErrorResponse> handlePasswordMismatchException(PasswordMismatchException ex, HttpServletRequest request) {
+
+        log.warn("Password and confirm password missmatch error: URI={}, type={}, msg={}",
                 request.getRequestURI(), ex.getClass().getSimpleName(), ex.getMessage());
 
         ErrorResponse errorResponse = new ErrorResponse
@@ -108,6 +136,25 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleUnexpected(Exception ex, HttpServletRequest request) {
 
+        if (ex instanceof AuthenticationException ||
+                ex instanceof AccessDeniedException) {
+            throw (RuntimeException) ex;
+        }
+
+        log.error("INTERNAL SERVER ERROR MESSAGE: URI={}, type={}, msg={}",
+                request.getRequestURI(), ex.getClass().getSimpleName(), ex.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse
+                (HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        HttpStatus.INTERNAL_SERVER_ERROR.name(),
+                        INTERNAL_SERVER_ERROR_MESSAGE,
+                        request.getRequestURI(),
+                        LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
 
 }

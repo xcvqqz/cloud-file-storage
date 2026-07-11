@@ -5,6 +5,7 @@ import io.github.xcvqqz.cloud_file_storage.dto.request.UserAuthenticationRequest
 import io.github.xcvqqz.cloud_file_storage.dto.request.UserRegistrationRequest;
 import io.github.xcvqqz.cloud_file_storage.dto.response.UserAuthResponse;
 import io.github.xcvqqz.cloud_file_storage.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,8 +23,8 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/sign-in")
-    public ResponseEntity<UserAuthResponse> signIn(@Valid @RequestBody UserAuthenticationRequest userAuthenticationRequest) {
-        return ResponseEntity.status(HttpStatus.OK).body(authService.find(userAuthenticationRequest));
+    public ResponseEntity<UserAuthResponse> signIn(@Valid @RequestBody UserAuthenticationRequest userAuthenticationRequest, HttpServletRequest servletRequest) {
+        return ResponseEntity.status(HttpStatus.OK).body(authService.find(userAuthenticationRequest, servletRequest));
     }
 
     @PostMapping("/sign-up")

@@ -7,11 +7,14 @@ import io.github.xcvqqz.cloud_file_storage.entity.Role;
 import io.github.xcvqqz.cloud_file_storage.entity.RoleName;
 import io.github.xcvqqz.cloud_file_storage.entity.User;
 import io.github.xcvqqz.cloud_file_storage.exception.DataBaseException;
+import io.github.xcvqqz.cloud_file_storage.exception.PasswordMismatchException;
 import io.github.xcvqqz.cloud_file_storage.exception.RolesNotFoundException;
 import io.github.xcvqqz.cloud_file_storage.exception.UserAlreadyExistsException;
 import io.github.xcvqqz.cloud_file_storage.mapper.AuthMapper;
 import io.github.xcvqqz.cloud_file_storage.repository.RoleRepository;
 import io.github.xcvqqz.cloud_file_storage.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.hibernate.exception.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
@@ -19,6 +22,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +34,7 @@ import java.util.*;
 @Transactional(readOnly = true)
 public class AuthService {
 
+    private static final String PASSWORD_MISS_MATCH_ERROR = "password and confirm password dont match";
     private static final String USER_ALREADY_EXIST_MESSAGE = "A user with this name is already exist";
     private static final String DATABASE_ERROR_MESSAGE = "Database error: %s";
 
@@ -53,6 +58,10 @@ public class AuthService {
     @Transactional(readOnly = false)
     public UserAuthResponse save(UserRegistrationRequest userRegistrationRequest) {
 
+        if(!userRegistrationRequest.password().equals(userRegistrationRequest.confirmPassword())){
+            throw new PasswordMismatchException(PASSWORD_MISS_MATCH_ERROR);
+        }
+
         User newUser = User
                 .builder()
                 .name(userRegistrationRequest.name())
@@ -72,13 +81,25 @@ public class AuthService {
 
 
 
-    public UserAuthResponse find(UserAuthenticationRequest userAuthenticationRequest) {
+    public UserAuthResponse find(UserAuthenticationRequest userAuthenticationRequest, HttpServletRequest httpRequest) {
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         userAuthenticationRequest.name(),
                         userAuthenticationRequest.password()
                 ));
+
+        // 2. Кладем аутентификацию в контекст безопасности
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // 3. ВОТ ЭТО ГЛАВНОЕ: принудительно создаем HTTP-сессию
+        HttpSession session = httpRequest.getSession(true); // true = создать, если нет
+
+        // 4. Явно сохраняем контекст безопасности в сессии
+        session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+
+        // 5. (Рекомендуется) Защита от Session Fixation
+        httpRequest.changeSessionId();
 
         return authMapper.authenticationToResponse(authentication);
     }

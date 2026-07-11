@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -48,12 +49,21 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                                .maximumSessions(1)
+                                .maxSessionsPreventsLogin(false)
+
+                )
+
                 .authorizeHttpRequests(auth -> auth
 
                         .requestMatchers("/css/**", "/html/**", "/images/**").permitAll()
+                        .requestMatchers("/api/auth/sign-in", "/api/auth/sign-up").permitAll()
+                        .requestMatchers("/api/auth/sign-out").authenticated()
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/user/**").hasRole("USER")
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/user/**").hasAnyAuthority("USER")
+                        .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN")
                         .anyRequest().permitAll())
 
                 .logout(logout -> logout

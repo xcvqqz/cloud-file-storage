@@ -29,6 +29,13 @@ public class PasswordMatchValidator implements ConstraintValidator<PasswordMatch
                     return false;
         }
 
+//        if(value.password().length() < 3){
+//            context.buildConstraintViolationWithTemplate(
+//                    "Password should be min 3 and less 30 symbol"
+//            ).addConstraintViolation();
+//            return false;
+//        }
+
         return true;
     }
 }
