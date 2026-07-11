@@ -12,6 +12,7 @@ public record ErrorResponse(
         String error,
         String message,
         String path,
+
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime timestamp
 
