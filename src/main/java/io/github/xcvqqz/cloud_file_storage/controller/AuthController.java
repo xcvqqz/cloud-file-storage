@@ -24,12 +24,12 @@ public class AuthController {
 
     @PostMapping("/sign-in")
     public ResponseEntity<UserAuthResponse> signIn(@Valid @RequestBody UserAuthenticationRequest userAuthenticationRequest, HttpServletRequest servletRequest) {
-        return ResponseEntity.status(HttpStatus.OK).body(authService.find(userAuthenticationRequest, servletRequest));
+        return ResponseEntity.status(HttpStatus.OK).body(authService.login(userAuthenticationRequest, servletRequest));
     }
 
     @PostMapping("/sign-up")
     public ResponseEntity<UserAuthResponse> signUp(@Valid @RequestBody UserRegistrationRequest userRegistrationRequest) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.save(userRegistrationRequest));
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(userRegistrationRequest));
     }
 
 

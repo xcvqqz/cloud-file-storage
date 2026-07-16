@@ -14,7 +14,6 @@ import io.github.xcvqqz.cloud_file_storage.mapper.AuthMapper;
 import io.github.xcvqqz.cloud_file_storage.repository.RoleRepository;
 import io.github.xcvqqz.cloud_file_storage.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import org.hibernate.exception.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
@@ -22,8 +21,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +43,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
+    private final HttpSessionSecurityContextRepository securityContextRepository =
+            new HttpSessionSecurityContextRepository();
+
 
     public List<UserAuthResponse> findAll() {
         List<UserAuthResponse> responses = new ArrayList<>();
@@ -56,7 +58,7 @@ public class AuthService {
     }
 
     @Transactional(readOnly = false)
-    public UserAuthResponse save(UserRegistrationRequest userRegistrationRequest) {
+    public UserAuthResponse register(UserRegistrationRequest userRegistrationRequest) {
 
         if(!userRegistrationRequest.password().equals(userRegistrationRequest.confirmPassword())){
             throw new PasswordMismatchException(PASSWORD_MISS_MATCH_ERROR);
@@ -69,19 +71,21 @@ public class AuthService {
                 .roles(setDefaultRole())
                 .build();
 
-        try {
-            userRepository.save(newUser);
-        } catch (DataIntegrityViolationException | ConstraintViolationException e) {
-            throw new UserAlreadyExistsException(USER_ALREADY_EXIST_MESSAGE);
-        } catch (DataAccessException e){
-            throw new DataBaseException(String.format(DATABASE_ERROR_MESSAGE, e.getMessage()));
-        }
-        return authMapper.entityToResponse(newUser);
+        userRepository.save(newUser);
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        userRegistrationRequest.name(),
+                        userRegistrationRequest.password()
+                ));
+
+        return authMapper.authenticationToResponse(authentication);
+
     }
 
 
 
-    public UserAuthResponse find(UserAuthenticationRequest userAuthenticationRequest, HttpServletRequest httpRequest) {
+    public UserAuthResponse login(UserAuthenticationRequest userAuthenticationRequest, HttpServletRequest httpRequest) {
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -89,17 +93,17 @@ public class AuthService {
                         userAuthenticationRequest.password()
                 ));
 
-        // 2. Кладем аутентификацию в контекст безопасности
-        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // 3. ВОТ ЭТО ГЛАВНОЕ: принудительно создаем HTTP-сессию
-        HttpSession session = httpRequest.getSession(true); // true = создать, если нет
+//        HttpSession session = httpRequest.getSession(true);
+//        session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+//        httpRequest.changeSessionId();
 
-        // 4. Явно сохраняем контекст безопасности в сессии
-        session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+//        SecurityContext context = SecurityContextHolder.createEmptyContext();
+//        context.setAuthentication(authentication);
+//        SecurityContextHolder.setContext(context);
 
-        // 5. (Рекомендуется) Защита от Session Fixation
-        httpRequest.changeSessionId();
+        // Сохраняем контекст в сессию через репозиторий
+//        securityContextRepository.saveContext(context, httpRequest, httpResponse);
 
         return authMapper.authenticationToResponse(authentication);
     }

@@ -2,17 +2,12 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/cfs_db
+    url: jdbc:postgresql://localhost:5432/cloudfilestorage-db
     username: postgres
     password: 111
     hikari:
       maximum-pool-size: 10
       connection-timeout: 30000
-
-  session:
-    jdbc:
-      initialize-schema: always
-
 
   jpa:
     show-sql: true
@@ -32,7 +27,6 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:/db/changelog/db.changelog-master.yaml
-    clear-checksums: true
 
 server:
   servlet:

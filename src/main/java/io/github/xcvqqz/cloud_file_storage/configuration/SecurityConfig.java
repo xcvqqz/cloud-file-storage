@@ -1,6 +1,7 @@
 package io.github.xcvqqz.cloud_file_storage.configuration;
 
 
+import io.github.xcvqqz.cloud_file_storage.security.UserDetailsServiceImpl;
 import io.github.xcvqqz.cloud_file_storage.security.handler.CustomAccessDeniedHandler;
 import io.github.xcvqqz.cloud_file_storage.security.handler.CustomAuthenticationEntryPoint;
 import io.github.xcvqqz.cloud_file_storage.security.handler.CustomLogoutSuccessHandler;
@@ -28,11 +29,11 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity       // Включает @PreAuthorize, @PostAuthorize на методах
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final UserDetailsService userDetailsService;
+    private final UserDetailsServiceImpl userDetailsService;
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
     private final CustomLogoutSuccessHandler logoutSuccessHandler;
@@ -41,11 +42,6 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                .exceptionHandling(exception ->
-                        exception
-                                .authenticationEntryPoint(authenticationEntryPoint)
-                                .accessDeniedHandler(accessDeniedHandler))
-
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
@@ -61,10 +57,14 @@ public class SecurityConfig {
                         .requestMatchers("/css/**", "/html/**", "/images/**").permitAll()
                         .requestMatchers("/api/auth/sign-in", "/api/auth/sign-up").permitAll()
                         .requestMatchers("/api/auth/sign-out").authenticated()
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/user/**").hasAnyAuthority("USER")
                         .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN")
+                        .requestMatchers("/api/user/**").hasAnyAuthority("USER")
                         .anyRequest().permitAll())
+
+                .exceptionHandling(exception ->
+                        exception
+                                .authenticationEntryPoint(authenticationEntryPoint)
+                                .accessDeniedHandler(accessDeniedHandler))
 
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/sign-out")
@@ -74,7 +74,6 @@ public class SecurityConfig {
                         .clearAuthentication(true)
                         .permitAll()
                 );
-
 
         return http.build();
     }

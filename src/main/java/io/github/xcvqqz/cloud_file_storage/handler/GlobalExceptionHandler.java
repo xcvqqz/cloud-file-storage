@@ -8,6 +8,7 @@ import io.github.xcvqqz.cloud_file_storage.exception.UserAlreadyExistsException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,7 @@ public class GlobalExceptionHandler {
     private static final String MISSMATCH_PASSWORDS_ERROR = "Your password and confirm password do not match";
     private static final String FORBIDDEN_ERROR_MESSAGE = "You are not authorized to access this profile";
     private static final String INTERNAL_SERVER_ERROR_MESSAGE = "An unexpected error occurred. Please try again later";
+    private static final String CONFLICT_ERROR_MESSAGE = "A user with that name already exists";
 
     @ExceptionHandler(RolesNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFoundException(RolesNotFoundException ex,  HttpServletRequest request) {
@@ -104,8 +106,8 @@ public class GlobalExceptionHandler {
     }
 
 
-    @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponse> handleUserAlreadyExistsExceptionException(UserAlreadyExistsException ex, HttpServletRequest request) {
+    @ExceptionHandler({DataIntegrityViolationException.class, ConstraintViolationException.class})
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(Exception ex, HttpServletRequest request) {
 
         log.warn("Conflict: URI={}, type={}, msg={}",
                 request.getRequestURI(), ex.getClass().getSimpleName(), ex.getMessage());
@@ -113,7 +115,7 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse
                 (HttpStatus.CONFLICT.value(),
                         HttpStatus.CONFLICT.name(),
-                        ex.getMessage(),
+                        CONFLICT_ERROR_MESSAGE,
                         request.getRequestURI(),
                         LocalDateTime.now());
 
