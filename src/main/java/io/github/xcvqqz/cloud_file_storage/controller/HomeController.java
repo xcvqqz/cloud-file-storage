@@ -1,7 +1,7 @@
 package io.github.xcvqqz.cloud_file_storage.controller;
 
 
-import io.github.xcvqqz.cloud_file_storage.dto.response.UserAuthResponse;
+import io.github.xcvqqz.cloud_file_storage.dto.response.UserAuthenticationResponse;
 import io.github.xcvqqz.cloud_file_storage.mapper.AuthMapper;
 import io.github.xcvqqz.cloud_file_storage.security.UserDetailsImpl;
 import lombok.AllArgsConstructor;
@@ -19,7 +19,7 @@ public class HomeController {
     private final AuthMapper authMapper;
 
     @GetMapping("/me")
-    public ResponseEntity<UserAuthResponse> getCurrentUser(@AuthenticationPrincipal UserDetailsImpl userDetails){
+    public ResponseEntity<UserAuthenticationResponse> getCurrentUser(@AuthenticationPrincipal UserDetailsImpl userDetails){
          return ResponseEntity.ok(authMapper.userNameToResponse(userDetails.getUsername()));
     }
 

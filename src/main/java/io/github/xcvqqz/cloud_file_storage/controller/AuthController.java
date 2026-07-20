@@ -3,16 +3,16 @@ package io.github.xcvqqz.cloud_file_storage.controller;
 
 import io.github.xcvqqz.cloud_file_storage.dto.request.UserAuthenticationRequest;
 import io.github.xcvqqz.cloud_file_storage.dto.request.UserRegistrationRequest;
-import io.github.xcvqqz.cloud_file_storage.dto.response.UserAuthResponse;
-import io.github.xcvqqz.cloud_file_storage.service.AuthService;
+import io.github.xcvqqz.cloud_file_storage.dto.response.UserAuthenticationResponse;
+import io.github.xcvqqz.cloud_file_storage.service.AuthenticationService;
+import io.github.xcvqqz.cloud_file_storage.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 
 @RestController
@@ -20,16 +20,18 @@ import java.util.List;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final AuthService authService;
+    private final AuthenticationService authService;
+    private final UserService userService;
 
     @PostMapping("/sign-in")
-    public ResponseEntity<UserAuthResponse> signIn(@Valid @RequestBody UserAuthenticationRequest userAuthenticationRequest, HttpServletRequest servletRequest) {
-        return ResponseEntity.status(HttpStatus.OK).body(authService.login(userAuthenticationRequest, servletRequest));
+    public ResponseEntity<UserAuthenticationResponse> signIn(@Valid @RequestBody UserAuthenticationRequest userAuthenticationRequest, HttpServletRequest request, HttpServletResponse response) {
+        return ResponseEntity.status(HttpStatus.OK).body(authService.authenticateUser(userAuthenticationRequest, request, response));
     }
 
     @PostMapping("/sign-up")
-    public ResponseEntity<UserAuthResponse> signUp(@Valid @RequestBody UserRegistrationRequest userRegistrationRequest) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(userRegistrationRequest));
+    public ResponseEntity<UserAuthenticationResponse> signUp(@Valid @RequestBody UserRegistrationRequest userRegistrationRequest, HttpServletRequest request, HttpServletResponse response) {
+        UserAuthenticationRequest authenticationRequest = userService.register(userRegistrationRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.authenticateUser(authenticationRequest, request, response));
     }
 
 

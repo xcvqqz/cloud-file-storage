@@ -1,7 +1,8 @@
 package io.github.xcvqqz.cloud_file_storage.mapper;
 
 
-import io.github.xcvqqz.cloud_file_storage.dto.response.UserAuthResponse;
+import io.github.xcvqqz.cloud_file_storage.dto.request.UserAuthenticationRequest;
+import io.github.xcvqqz.cloud_file_storage.dto.response.UserAuthenticationResponse;
 import io.github.xcvqqz.cloud_file_storage.entity.User;
 import org.mapstruct.Mapper;
 import org.springframework.security.core.Authentication;
@@ -9,10 +10,12 @@ import org.springframework.security.core.Authentication;
 @Mapper(componentModel = "spring")
 public interface AuthMapper {
 
-    UserAuthResponse entityToResponse(User user);
+    UserAuthenticationResponse entityToResponse(User user);
 
-    UserAuthResponse authenticationToResponse(Authentication authentication);
+    UserAuthenticationResponse authenticationToResponse(Authentication authentication);
 
-    UserAuthResponse userNameToResponse(String userName);
+    UserAuthenticationResponse userNameToResponse(String userName);
+
+    UserAuthenticationRequest userToAuthenticationRequest(User user);
 
 }

@@ -1,6 +1,6 @@
 package io.github.xcvqqz.cloud_file_storage.dto.response;
 
-public record UserAuthResponse(
+public record UserAuthenticationResponse(
         String name
 )
 {}

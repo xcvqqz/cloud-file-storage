@@ -1,7 +1,10 @@
 package io.github.xcvqqz.cloud_file_storage.configuration;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.xcvqqz.cloud_file_storage.security.UserDetailsServiceImpl;
+import io.github.xcvqqz.cloud_file_storage.security.filter.CustomLoginAuthFilter;
+import io.github.xcvqqz.cloud_file_storage.security.filter.CustomRegisterAuthFilter;
 import io.github.xcvqqz.cloud_file_storage.security.handler.CustomAccessDeniedHandler;
 import io.github.xcvqqz.cloud_file_storage.security.handler.CustomAuthenticationEntryPoint;
 import io.github.xcvqqz.cloud_file_storage.security.handler.CustomLogoutSuccessHandler;
@@ -20,6 +23,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -41,9 +45,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
+
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
 
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
@@ -78,6 +84,17 @@ public class SecurityConfig {
         return http.build();
     }
 
+    @Bean
+    CustomRegisterAuthFilter customRegisterAuthFilter(
+            AuthenticationManager authenticationManager,
+            ObjectMapper objectMapper) {
+
+        return new CustomRegisterAuthFilter(
+                authenticationManager,
+                objectMapper
+        );
+    }
+
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -87,6 +104,7 @@ public class SecurityConfig {
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder(){
