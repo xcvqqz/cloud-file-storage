@@ -10,11 +10,9 @@ import org.springframework.security.core.Authentication;
 @Mapper(componentModel = "spring")
 public interface AuthMapper {
 
-    UserAuthenticationResponse entityToResponse(User user);
-
     UserAuthenticationResponse authenticationToResponse(Authentication authentication);
 
-    UserAuthenticationResponse userNameToResponse(String userName);
+    UserAuthenticationResponse userNameToResponse(String name);
 
     UserAuthenticationRequest userToAuthenticationRequest(User user);
 

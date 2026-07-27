@@ -22,7 +22,4 @@ public class HomeController {
     public ResponseEntity<UserAuthenticationResponse> getCurrentUser(@AuthenticationPrincipal UserDetailsImpl userDetails){
          return ResponseEntity.ok(authMapper.userNameToResponse(userDetails.getUsername()));
     }
-
-
-
 }
