@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.boot.autoconfigure.info.ProjectInfoProperties;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +35,7 @@ public class GlobalExceptionHandler {
     private static final String FORBIDDEN_ERROR_MESSAGE = "You are not authorized to access this profile";
     private static final String INTERNAL_SERVER_ERROR_MESSAGE = "An unexpected error occurred. Please try again later";
     private static final String CONFLICT_ERROR_MESSAGE = "A user with that name already exists";
+    private static final String ROLES_NOT_FOUND_MESSAGE = "Roles not found";
 
     @ExceptionHandler(RolesNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFoundException(RolesNotFoundException ex,  HttpServletRequest request) {
@@ -41,14 +43,9 @@ public class GlobalExceptionHandler {
         log.warn("Entity not found: URI={}, type={}, msg={}",
                 request.getRequestURI(), ex.getClass().getSimpleName(), ex.getMessage());
 
-        ErrorResponse errorResponse = new ErrorResponse
-                        (HttpStatus.NOT_FOUND.value(),
-                        HttpStatus.NOT_FOUND.name(),
-                        "Пользователь не найден",
-                        request.getRequestURI(),
-                        LocalDateTime.now());
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(buildErrorResponse(HttpStatus.NOT_FOUND, ROLES_NOT_FOUND_MESSAGE, request));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
@@ -57,14 +54,10 @@ public class GlobalExceptionHandler {
         log.warn("Access denied: URI={}, type={}, msg={}",
                 request.getRequestURI(), ex.getClass().getSimpleName(), ex.getMessage());
 
-        ErrorResponse errorResponse = new ErrorResponse
-                        (HttpStatus.FORBIDDEN.value(),
-                        HttpStatus.FORBIDDEN.name(),
-                        FORBIDDEN_ERROR_MESSAGE,
-                        request.getRequestURI(),
-                        LocalDateTime.now());
-
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(
+                        buildErrorResponse(HttpStatus.FORBIDDEN, FORBIDDEN_ERROR_MESSAGE, request));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -79,14 +72,11 @@ public class GlobalExceptionHandler {
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.toList());
 
-        ErrorResponse errorResponse = new ErrorResponse
-                (HttpStatus.BAD_REQUEST.value(),
-                        HttpStatus.BAD_REQUEST.name(),
-                        String.join(", ", errorMessages),
-                        request.getRequestURI(),
-                        LocalDateTime.now());
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(
+                        buildErrorResponse(HttpStatus.BAD_REQUEST, String.join(", ", errorMessages), request));
     }
 
     @ExceptionHandler(PasswordMismatchException.class)
@@ -95,14 +85,11 @@ public class GlobalExceptionHandler {
         log.warn("Password and confirm password missmatch error: URI={}, type={}, msg={}",
                 request.getRequestURI(), ex.getClass().getSimpleName(), ex.getMessage());
 
-        ErrorResponse errorResponse = new ErrorResponse
-                (HttpStatus.BAD_REQUEST.value(),
-                        HttpStatus.BAD_REQUEST.name(),
-                        MISSMATCH_PASSWORDS_ERROR,
-                        request.getRequestURI(),
-                        LocalDateTime.now());
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(
+                        buildErrorResponse(HttpStatus.BAD_REQUEST, MISSMATCH_PASSWORDS_ERROR, request));
     }
 
 
@@ -112,14 +99,10 @@ public class GlobalExceptionHandler {
         log.warn("Conflict: URI={}, type={}, msg={}",
                 request.getRequestURI(), ex.getClass().getSimpleName(), ex.getMessage());
 
-        ErrorResponse errorResponse = new ErrorResponse
-                (HttpStatus.CONFLICT.value(),
-                        HttpStatus.CONFLICT.name(),
-                        CONFLICT_ERROR_MESSAGE,
-                        request.getRequestURI(),
-                        LocalDateTime.now());
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(
+                        buildErrorResponse(HttpStatus.CONFLICT, CONFLICT_ERROR_MESSAGE, request));
     }
 
     @ExceptionHandler(DataBaseException.class)
@@ -128,14 +111,10 @@ public class GlobalExceptionHandler {
         log.error("DataBase error: URI={}, type={}, msg={}",
                 request.getRequestURI(), ex.getClass().getSimpleName(), ex.getMessage());
 
-        ErrorResponse errorResponse = new ErrorResponse
-                (HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        HttpStatus.INTERNAL_SERVER_ERROR.name(),
-                        ex.getMessage(),
-                        request.getRequestURI(),
-                        LocalDateTime.now());
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(
+                        buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request));
     }
 
     @ExceptionHandler(Exception.class)
@@ -149,14 +128,20 @@ public class GlobalExceptionHandler {
         log.error("INTERNAL SERVER ERROR MESSAGE: URI={}, type={}, msg={}",
                 request.getRequestURI(), ex.getClass().getSimpleName(), ex.getMessage());
 
-        ErrorResponse errorResponse = new ErrorResponse
-                (HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        HttpStatus.INTERNAL_SERVER_ERROR.name(),
-                        INTERNAL_SERVER_ERROR_MESSAGE,
-                        request.getRequestURI(),
-                        LocalDateTime.now());
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(
+                        buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_MESSAGE, request));
+    }
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    private ErrorResponse buildErrorResponse(HttpStatus status, String message, HttpServletRequest request){
+        return new ErrorResponse(
+                status.value(),
+                status.name(),
+                message,
+                request.getRequestURI(),
+                LocalDateTime.now()
+        );
     }
 
 }
