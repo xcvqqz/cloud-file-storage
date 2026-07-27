@@ -2,7 +2,7 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/cloudfilestorage-db
+    url: jdbc:postgresql://localhost:5432/postgres
     username: postgres
     password: 111
     hikari:
@@ -36,6 +36,15 @@ server:
         secure: true
         same-site: strict
       timeout: 30m
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web.servlet: TRACE
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE
 
 app:
   admin:

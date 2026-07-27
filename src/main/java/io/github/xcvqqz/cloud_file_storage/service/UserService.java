@@ -3,6 +3,7 @@ package io.github.xcvqqz.cloud_file_storage.service;
 
 import io.github.xcvqqz.cloud_file_storage.dto.request.UserAuthenticationRequest;
 import io.github.xcvqqz.cloud_file_storage.dto.request.UserRegistrationRequest;
+import io.github.xcvqqz.cloud_file_storage.dto.response.UserAuthenticationResponse;
 import io.github.xcvqqz.cloud_file_storage.entity.Role;
 import io.github.xcvqqz.cloud_file_storage.entity.RoleName;
 import io.github.xcvqqz.cloud_file_storage.entity.User;
@@ -46,6 +47,7 @@ public class UserService {
                 .build();
 
        return  authMapper.userToAuthenticationRequest(userRepository.save(newUser));
+
 
     }
 

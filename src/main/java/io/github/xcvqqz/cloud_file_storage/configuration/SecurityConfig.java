@@ -3,8 +3,6 @@ package io.github.xcvqqz.cloud_file_storage.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.xcvqqz.cloud_file_storage.security.UserDetailsServiceImpl;
-import io.github.xcvqqz.cloud_file_storage.security.filter.CustomLoginAuthFilter;
-import io.github.xcvqqz.cloud_file_storage.security.filter.CustomRegisterAuthFilter;
 import io.github.xcvqqz.cloud_file_storage.security.handler.CustomAccessDeniedHandler;
 import io.github.xcvqqz.cloud_file_storage.security.handler.CustomAuthenticationEntryPoint;
 import io.github.xcvqqz.cloud_file_storage.security.handler.CustomLogoutSuccessHandler;
@@ -24,6 +22,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -75,7 +75,6 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/sign-out")
                         .logoutSuccessHandler(logoutSuccessHandler)
-                        .deleteCookies("JSESSIONID")
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
                         .permitAll()
@@ -84,17 +83,11 @@ public class SecurityConfig {
         return http.build();
     }
 
+
     @Bean
-    CustomRegisterAuthFilter customRegisterAuthFilter(
-            AuthenticationManager authenticationManager,
-            ObjectMapper objectMapper) {
-
-        return new CustomRegisterAuthFilter(
-                authenticationManager,
-                objectMapper
-        );
+    SecurityContextRepository securityContextRepository() {
+        return new HttpSessionSecurityContextRepository();
     }
-
 
     @Bean
     public AuthenticationProvider authenticationProvider() {

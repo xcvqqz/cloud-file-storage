@@ -30,10 +30,24 @@ public class AuthController {
 
     @PostMapping("/sign-up")
     public ResponseEntity<UserAuthenticationResponse> signUp(@Valid @RequestBody UserRegistrationRequest userRegistrationRequest, HttpServletRequest request, HttpServletResponse response) {
-        UserAuthenticationRequest authenticationRequest = userService.register(userRegistrationRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.authenticateUser(authenticationRequest, request, response));
+
+        userService.register(userRegistrationRequest);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(
+                        authService.authenticateUser(
+                                new UserAuthenticationRequest(
+                                        userRegistrationRequest.name(),
+                                        userRegistrationRequest.password()
+                                ),
+                                request,
+                                response
+                        )
+                );
     }
 
 
+
+//      return ResponseEntity.status(HttpStatus.CREATED).body(userService.register(userRegistrationRequest));
 
 }

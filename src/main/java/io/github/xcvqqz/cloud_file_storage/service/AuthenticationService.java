@@ -11,6 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +26,7 @@ public class AuthenticationService {
 
     private final AuthMapper authMapper;
     private final AuthenticationManager authenticationManager;
+    private final SecurityContextRepository securityContextRepository;
 
 
     public UserAuthenticationResponse authenticateUser(UserAuthenticationRequest authenticationRequest, HttpServletRequest request, HttpServletResponse response) {
@@ -38,6 +40,8 @@ public class AuthenticationService {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);
+
+        securityContextRepository.saveContext(context, request, response);
 
         return authMapper.authenticationToResponse(authentication);
     }
