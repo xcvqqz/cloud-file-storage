@@ -1,4 +1,4 @@
-package io.github.xcvqqz.cloud_file_storage.configuration;
+package io.github.xcvqqz.cloud_file_storage;
 
 
 import io.github.xcvqqz.cloud_file_storage.entity.Role;
