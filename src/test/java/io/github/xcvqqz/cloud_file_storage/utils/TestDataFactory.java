@@ -22,19 +22,22 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 @RequiredArgsConstructor
 public class TestDataFactory {
 
+    private static final String TEST_USER_NAME = "testname";
+    private static final String TEST_USER_PASSWORD = "testpassword";
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
     public User createUserWithRole(){
-
-       return buildTestUser();
+        findOrCreateUserRole();
+        return buildTestUser();
     }
 
     private User buildTestUser(){
        User user = User.builder()
-                .name("testname")
-                .password(passwordEncoder.encode("testdb"))
+                .name(TEST_USER_NAME)
+                .password(passwordEncoder.encode(TEST_USER_PASSWORD))
                 .roles(new HashSet<>(Collections.singleton(findOrCreateUserRole())))
                 .build();
        return userRepository.save(user);
@@ -58,6 +61,10 @@ public class TestDataFactory {
 
     public RequestPostProcessor mockUserAs(String name, String... roles) {
         return user(name).password("password").roles(roles);
+    }
+
+    public String getTestUsername() {
+        return TEST_USER_NAME;
     }
 
 }

@@ -20,27 +20,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
-@AutoConfigureMockMvc
 public class UserRegistrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private TestDataFactory testDataFactory;
-
-    @Autowired
     private ObjectMapper objectMapper;
 
-//    @BeforeEach
-//    void setUp(){
-//        testDataFactory.clearAll();
-//        testDataFactory.createUserWithRole();
-//    }
-
     @Test
-    @DisplayName("регистрация нового пользователя с валидными данными")
+    @DisplayName("успешная регистрация нового пользователя с валидными данными")
     public void shouldRegisterNewUser() throws Exception {
         Map<String, String> request =
                 Map.of("name", "testname",
@@ -73,6 +62,22 @@ public class UserRegistrationTest extends AbstractIntegrationTest {
                 .andExpect(result ->
                         assertInstanceOf(PasswordMismatchException.class,
                                 result.getResolvedException()));
+    }
+
+    @Test
+    @DisplayName("возвращение статуса 400 при невалидном имени пользователя при регистрации")
+    public void shouldFailWhenUsernameIsTooShort() throws Exception {
+        Map<String, String> request =
+                Map.of("name", "te",
+                        "password", "testpassword",
+                        "confirmPassword", "testpassword");
+
+        mockMvc.perform(post("/api/auth/sign-up")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("login should be min 3 and less 30 symbol"));
     }
 
 
