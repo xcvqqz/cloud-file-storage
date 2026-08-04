@@ -27,34 +27,33 @@ public class TestDataFactory {
     private final PasswordEncoder passwordEncoder;
 
     public User createUserWithRole(){
-        buildTestRole();
+
        return buildTestUser();
     }
 
-    private Role buildTestRole(){
-        return Role.builder()
-                .id(1L)
-                .name(RoleName.USER)
-                .build();
-    }
-
     private User buildTestUser(){
-       return User.builder()
-                .id(1L)
+       User user = User.builder()
                 .name("testname")
                 .password(passwordEncoder.encode("testdb"))
-                .roles(setDefaultRole())
+                .roles(new HashSet<>(Collections.singleton(findOrCreateUserRole())))
                 .build();
+       return userRepository.save(user);
     }
 
-    private Set<Role> setDefaultRole() {
+    private Role findOrCreateUserRole() {
 
-        Role role = roleRepository
-                .findByName(RoleName.USER)
-                .orElseThrow(()-> new RolesNotFoundException("Roles Not Found"));
+        return roleRepository
+                .findByName(RoleName.USER).orElseGet(() -> {
+                    Role newRole = Role.builder()
+                            .name(RoleName.USER)
+                            .build();
+                  return roleRepository.save(newRole);
+                });
+    }
 
-        return new HashSet<Role>(Collections.singleton(role));
-
+   public void clearAll(){
+        userRepository.deleteAll();
+        roleRepository.deleteAll();
     }
 
     public RequestPostProcessor mockUserAs(String name, String... roles) {

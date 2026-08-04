@@ -16,18 +16,12 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 public abstract class AbstractIntegrationTest {
 
-    private static final PostgreSQLContainer<?> POSTGRES;
-
-    static {
-        POSTGRES = new PostgreSQLContainer<>
+    @Container
+    private static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>
                 ("postgres:16-alpine")
                 .withDatabaseName("testdb")
                 .withUsername("test")
                 .withPassword("test");
-
-        POSTGRES.start();
-    }
-
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry){
