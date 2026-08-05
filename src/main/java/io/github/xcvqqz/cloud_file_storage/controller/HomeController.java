@@ -20,6 +20,7 @@ public class HomeController {
 
     @GetMapping("/me")
     public ResponseEntity<UserAuthenticationResponse> getCurrentUser(@AuthenticationPrincipal UserDetailsImpl userDetails){
-         return ResponseEntity.ok(authMapper.userNameToResponse(userDetails.getUsername()));
+         return ResponseEntity.ok(authMapper.userDetailsToResponse(userDetails));
+
     }
 }

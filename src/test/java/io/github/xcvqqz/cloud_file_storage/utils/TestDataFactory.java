@@ -67,4 +67,8 @@ public class TestDataFactory {
         return TEST_USER_NAME;
     }
 
+    public String getTestPassword() {
+        return TEST_USER_PASSWORD;
+    }
+
 }

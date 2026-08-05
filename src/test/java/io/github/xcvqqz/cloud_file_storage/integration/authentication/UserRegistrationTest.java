@@ -32,9 +32,7 @@ public class UserRegistrationTest extends AbstractIntegrationTest {
     @DisplayName("успешная регистрация нового пользователя с валидными данными")
     public void shouldRegisterNewUser() throws Exception {
         Map<String, String> request =
-                Map.of("name", "testname",
-                        "password", "testpassword",
-                        "confirmPassword", "testpassword");
+                createRegistrationRequest("testname", "testpassword", "testpassword");
 
         mockMvc.perform(post("/api/auth/sign-up")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -49,9 +47,7 @@ public class UserRegistrationTest extends AbstractIntegrationTest {
     @DisplayName("ошибка несовпадающих паролей при регистрации")
     public void shouldThrowExceptionWhenPasswordAndConfirmPasswordDoNotMatch() throws Exception {
         Map<String, String> request =
-                Map.of("name", "testname",
-                        "password", "testpassword",
-                        "confirmPassword", "wrongpassword");
+                createRegistrationRequest("testname", "testpassword", "wrongpassword");
 
         mockMvc.perform(post("/api/auth/sign-up")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -67,10 +63,8 @@ public class UserRegistrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("возвращение статуса 400 при невалидном имени пользователя при регистрации")
     public void shouldFailWhenUsernameIsTooShort() throws Exception {
-        Map<String, String> request =
-                Map.of("name", "te",
-                        "password", "testpassword",
-                        "confirmPassword", "testpassword");
+        Map<String, String> request
+                = createRegistrationRequest("te", "testpassword", "testpassword");
 
         mockMvc.perform(post("/api/auth/sign-up")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -78,6 +72,12 @@ public class UserRegistrationTest extends AbstractIntegrationTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").value("login should be min 3 and less 30 symbol"));
+    }
+
+    private Map<String, String> createRegistrationRequest(String name, String password, String confirmPassword){
+        return Map.of("name", name,
+                "password", password,
+                "confirmPassword", confirmPassword);
     }
 
 

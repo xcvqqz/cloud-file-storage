@@ -15,13 +15,14 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
 public class UserAuthenticationTest extends AbstractIntegrationTest {
+
+    private static final String INVALID_TEST_NAME = "InvalidTestName";
+    private static final String INVALID_TEST_PASSWORD = "InvalidTestPassword";
 
     @Autowired
     private MockMvc mockMvc;
@@ -42,24 +43,36 @@ public class UserAuthenticationTest extends AbstractIntegrationTest {
     @DisplayName("успешная аутентификация пользователя с валидными данными")
     public void shouldAuthenticateSuccessfullyWithValidCredentials() throws Exception {
         Map<String, String> request =
-                Map.of("name", "testname",
-                        "password", "testpassword",
-                        "confirmPassword", "testpassword");
+                createAuthenticationRequest(testDataFactory.getTestUsername(), testDataFactory.getTestPassword());
 
         mockMvc.perform(post("/api/auth/sign-in")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value(testDataFactory.getTestUsername()))
+                .andExpect(jsonPath())
+                .andExpect(jsonPath("$.password").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("ошибка аутентификации пользователя с невалидными данными")
+    public void shouldFailAuthenticationWithInvalidCredentials() throws Exception {
+        Map<String, String> request =
+                createAuthenticationRequest(INVALID_TEST_NAME, INVALID_TEST_PASSWORD);
+
+        mockMvc.perform(post("/api/auth/sign-in")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.name").value(testDataFactory.getTestUsername()))
                 .andExpect(jsonPath("$.password").doesNotExist());
     }
 
 
-
-
-
-
-
+    private Map<String, String> createAuthenticationRequest(String name, String password){
+        return Map.of("name", name,
+                "password", password);
+    }
 
 
 
