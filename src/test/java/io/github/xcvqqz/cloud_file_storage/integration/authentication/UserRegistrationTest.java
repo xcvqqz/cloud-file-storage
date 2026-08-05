@@ -39,6 +39,7 @@ public class UserRegistrationTest extends AbstractIntegrationTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("testname"))
+                .andExpect(jsonPath("$.roles[0]").value("USER"))
                 .andExpect(jsonPath("$.password").doesNotExist());
     }
 
