@@ -32,6 +32,7 @@ dependencies {
 
     runtimeOnly("org.liquibase:liquibase-core")
 
+    implementation("io.minio:minio:8.6.0")
 
 
     compileOnly("org.projectlombok:lombok")
