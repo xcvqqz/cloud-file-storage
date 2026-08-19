@@ -1,4 +1,4 @@
-package io.github.xcvqqz.cloud_file_storage.service;
+package io.github.xcvqqz.cloud_file_storage.service.auth;
 
 import io.github.xcvqqz.cloud_file_storage.dto.request.UserAuthenticationRequest;
 import io.github.xcvqqz.cloud_file_storage.dto.response.UserAuthenticationResponse;

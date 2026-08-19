@@ -2,7 +2,7 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://localhost:5433/cloudfilestorage-db
     username: postgres
     password: 111
     hikari:
@@ -28,6 +28,12 @@ spring:
     enabled: true
     change-log: classpath:/db/changelog/db.changelog-master.yaml
 
+minio:
+    access-key: ${MINIO_ACCESS_KEY}
+    secret-key: ${MINIO_SECRET_KEY}
+    endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+    bucket: ${MINIO_BUCKET:my-files}
+
 server:
   servlet:
     session:
@@ -48,5 +54,5 @@ logging:
 
 app:
   admin:
-    name: "admin"
-    password: "12345m"
+    name: ${APP_ADMIN_NAME}
+    password: ${APP_ADMIN_PASSWORD}

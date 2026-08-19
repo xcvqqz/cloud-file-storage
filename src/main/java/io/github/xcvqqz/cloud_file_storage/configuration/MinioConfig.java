@@ -1,6 +1,5 @@
 package io.github.xcvqqz.cloud_file_storage.configuration;
 
-
 import io.minio.MinioClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
