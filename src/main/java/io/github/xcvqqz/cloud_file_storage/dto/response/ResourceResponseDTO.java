@@ -4,7 +4,7 @@ public record ResourceResponseDTO(
 
         String path,
         String name,
-        byte size,
+        long size,
         String type
 
 )

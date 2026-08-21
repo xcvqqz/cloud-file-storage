@@ -62,6 +62,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/sign-out").authenticated()
                         .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN")
                         .requestMatchers("/api/user/**").hasAnyAuthority("USER")
+
                         .anyRequest().permitAll())
 
                 .exceptionHandling(exception ->
