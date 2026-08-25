@@ -1,10 +1,7 @@
 package io.github.xcvqqz.cloud_file_storage.handler;
 
 import io.github.xcvqqz.cloud_file_storage.dto.response.ErrorResponse;
-import io.github.xcvqqz.cloud_file_storage.exception.DataBaseException;
-import io.github.xcvqqz.cloud_file_storage.exception.PasswordMismatchException;
-import io.github.xcvqqz.cloud_file_storage.exception.RolesNotFoundException;
-import io.github.xcvqqz.cloud_file_storage.exception.UserAlreadyExistsException;
+import io.github.xcvqqz.cloud_file_storage.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +34,9 @@ public class GlobalExceptionHandler {
     private static final String CONFLICT_ERROR_MESSAGE = "A user with that name already exists";
     private static final String ROLES_NOT_FOUND_MESSAGE = "Roles not found";
 
-    @ExceptionHandler(RolesNotFoundException.class)
+    @ExceptionHandler({RolesNotFoundException.class,
+            DirectoryNotFoundException.class,
+            FileNotFoundException.class})
     public ResponseEntity<ErrorResponse> handleNotFoundException(RolesNotFoundException ex,  HttpServletRequest request) {
 
         log.warn("Entity not found: URI={}, type={}, msg={}",

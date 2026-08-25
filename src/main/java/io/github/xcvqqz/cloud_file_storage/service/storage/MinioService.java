@@ -2,22 +2,20 @@ package io.github.xcvqqz.cloud_file_storage.service.storage;
 
 
 import io.github.xcvqqz.cloud_file_storage.dto.request.ResourceRequestDTO;
-import io.github.xcvqqz.cloud_file_storage.dto.response.ResourceResponseDTO;
+import io.github.xcvqqz.cloud_file_storage.dto.response.ResourceResponse;
+import io.github.xcvqqz.cloud_file_storage.dto.response.resource.DirectoryResponseDTO;
+import io.github.xcvqqz.cloud_file_storage.dto.response.resource.FileResponseDTO;
+import io.github.xcvqqz.cloud_file_storage.dto.response.resource.ResourceResponseDTO;
 import io.github.xcvqqz.cloud_file_storage.entity.ResourceType;
 import io.github.xcvqqz.cloud_file_storage.exception.DirectoryNotFoundException;
-import io.github.xcvqqz.cloud_file_storage.service.file.FileService;
-import io.github.xcvqqz.cloud_file_storage.service.file.FileServiceImpl;
 import io.minio.*;
 import io.minio.errors.*;
 import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -59,7 +57,7 @@ public class MinioService implements FileStorageService {
     }
 
 
-    private ResourceResponseDTO getDirectoryInfo(String path) {
+    private DirectoryResponseDTO getDirectoryInfo(String path) {
 
         Iterable<Result<Item>> results = minioClient.listObjects(
                 ListObjectsArgs.builder()
@@ -76,16 +74,15 @@ public class MinioService implements FileStorageService {
             );
         }
 
-        return new ResourceResponseDTO(
-                path,
-                "-",
-                0L,
-                DIRECTORY_TYPE
-        );
+        return DirectoryResponseDTO.builder()
+                .path(path)
+                .type(ResourceType.DIRECTORY)
+                .build();
+
     }
 
 
-    private ResourceResponseDTO getFileInfo(String path)
+    private FileResponseDTO getFileInfo(String path)
             throws ServerException,
             InsufficientDataException,
             ErrorResponseException,
@@ -108,12 +105,12 @@ public class MinioService implements FileStorageService {
                     .getFileName()
                     .toString();
 
-            return new ResourceResponseDTO(
-                    response.object(),
-                    fileName,
-                    response.size(),
-                    FILE_TYPE
-            );
+            return FileResponseDTO.builder()
+                    .path(response.object())
+                    .name(fileName)
+                    .size(response.size())
+                    .type(FILE)
+                    .build();
 
         } catch (ErrorResponseException e) {
 

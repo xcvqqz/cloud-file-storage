@@ -1,6 +1,6 @@
 package io.github.xcvqqz.cloud_file_storage.dto.response;
 
-public record ResourceResponseDTO(
+public record ResourceResponse(
 
         String path,
         String name,

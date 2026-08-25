@@ -2,7 +2,7 @@ package io.github.xcvqqz.cloud_file_storage.controller;
 
 
 import io.github.xcvqqz.cloud_file_storage.dto.request.ResourceRequestDTO;
-import io.github.xcvqqz.cloud_file_storage.dto.response.ResourceResponseDTO;
+import io.github.xcvqqz.cloud_file_storage.dto.response.resource.ResourceResponseDTO;
 import io.github.xcvqqz.cloud_file_storage.service.storage.MinioService;
 import io.minio.errors.*;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,5 @@ public class ResourceController {
     public ResponseEntity<ResourceResponseDTO> getResourceInfo(@ModelAttribute ResourceRequestDTO request) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
         return ResponseEntity.ok(minioService.getResourceInfo(request));
     }
-
-
 
 }
