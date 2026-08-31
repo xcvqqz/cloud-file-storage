@@ -31,4 +31,10 @@ public class ResourceController {
         return ResponseEntity.ok(minioService.getResourceInfo(request));
     }
 
+
+    @DeleteMapping
+    public ResponseEntity<Void> deleteResource(){
+        return ResponseEntity.noContent(minioService.)
+    }
+
 }

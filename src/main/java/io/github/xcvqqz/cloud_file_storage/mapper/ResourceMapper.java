@@ -1,7 +1,7 @@
 package io.github.xcvqqz.cloud_file_storage.mapper;
 
 
-import io.github.xcvqqz.cloud_file_storage.dto.response.ResourceResponse;
+import io.github.xcvqqz.cloud_file_storage.dto.response.resource.ResourceResponseDTO;
 import io.minio.StatObjectResponse;
 import org.mapstruct.Mapper;
 
@@ -9,8 +9,6 @@ import org.mapstruct.Mapper;
 public interface ResourceMapper {
 
 
-    ResourceResponse statObjectToResourceResponseDTO(StatObjectResponse statObjectResponse);
-
-
-
+    ResourceResponseDTO statObjectToResourceResponseDTO(StatObjectResponse statObjectResponse);
+    
 }

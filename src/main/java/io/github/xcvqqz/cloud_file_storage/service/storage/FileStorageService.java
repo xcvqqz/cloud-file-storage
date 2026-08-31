@@ -13,6 +13,8 @@ public interface FileStorageService {
 
     ResourceResponseDTO getResourceInfo(ResourceRequestDTO request) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException;
 
+    ResourceResponseDTO deleteResource(ResourceRequestDTO request);
+
     boolean bucketExist(String bucketName);
 
 }

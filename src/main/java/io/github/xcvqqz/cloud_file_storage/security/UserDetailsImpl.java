@@ -41,6 +41,8 @@ public class UserDetailsImpl implements UserDetails {
         return authorities;
     }
 
+    public Long getId(){ return this.id; }
+
     @Override
     public String getPassword() {
         return this.password;

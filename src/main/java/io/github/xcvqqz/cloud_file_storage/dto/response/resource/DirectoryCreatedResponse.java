@@ -1,4 +1,4 @@
-package io.github.xcvqqz.cloud_file_storage.dto.response;
+package io.github.xcvqqz.cloud_file_storage.dto.response.resource;
 
 public record DirectoryCreatedResponse(
 
