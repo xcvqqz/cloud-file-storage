@@ -46,6 +46,5 @@ public class AuthenticationService {
         return authMapper.authenticationToResponse(authentication);
     }
 
-    public
 
 }
