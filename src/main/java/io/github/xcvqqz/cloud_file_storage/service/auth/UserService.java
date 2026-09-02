@@ -18,6 +18,7 @@ import lombok.extern.log4j.Log4j;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,14 +58,14 @@ public class UserService {
 
     public Long getCurrentUserId(){
 
-        Long userId = 0L;
+        Long userId;
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if(auth != null && auth.isAuthenticated()){
             UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
             userId = userDetails.getId();
             log.info("для данного пользователя получен id: {}", userId);
         }
-        return userId;
+        throw new UsernameNotFoundException("пользователь не найден, либо не авторизован");
     }
 
     private Set<Role> setDefaultRole() {

@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
-import org.springframework.boot.autoconfigure.info.ProjectInfoProperties;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,11 +31,10 @@ public class GlobalExceptionHandler {
     private static final String FORBIDDEN_ERROR_MESSAGE = "You are not authorized to access this profile";
     private static final String INTERNAL_SERVER_ERROR_MESSAGE = "An unexpected error occurred. Please try again later";
     private static final String CONFLICT_ERROR_MESSAGE = "A user with that name already exists";
-    private static final String ROLES_NOT_FOUND_MESSAGE = "Roles not found";
+    private static final String ENTITY_NOT_FOUND_MESSAGE = "Entity not found";
 
     @ExceptionHandler({RolesNotFoundException.class,
-            DirectoryNotFoundException.class,
-            FileNotFoundException.class})
+            ResourceNotFoundException.class})
     public ResponseEntity<ErrorResponse> handleNotFoundException(RolesNotFoundException ex,  HttpServletRequest request) {
 
         log.warn("Entity not found: URI={}, type={}, msg={}",
@@ -44,7 +42,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(buildErrorResponse(HttpStatus.NOT_FOUND, ROLES_NOT_FOUND_MESSAGE, request));
+                .body(buildErrorResponse(HttpStatus.NOT_FOUND, ENTITY_NOT_FOUND_MESSAGE, request));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
@@ -115,6 +113,19 @@ public class GlobalExceptionHandler {
                 .body(
                         buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request));
     }
+
+    @ExceptionHandler(StorageException.class)
+    public ResponseEntity<ErrorResponse> handleStorageException(StorageException ex, HttpServletRequest request) {
+
+        log.error("Storage error: URI={}, type={}, msg={}",
+                request.getRequestURI(), ex.getClass().getSimpleName(), ex.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(
+                        buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request));
+    }
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpected(Exception ex, HttpServletRequest request) {
