@@ -60,6 +60,7 @@ public class SecurityConfig {
                         .requestMatchers("/css/**", "/html/**", "/images/**").permitAll()
                         .requestMatchers("/api/auth/sign-in", "/api/auth/sign-up").permitAll()
                         .requestMatchers("/api/auth/sign-out").authenticated()
+                        .requestMatchers("/api/resource/**").authenticated()
                         .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN")
                         .requestMatchers("/api/user/**").hasAnyAuthority("USER")
 

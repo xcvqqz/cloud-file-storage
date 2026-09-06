@@ -12,8 +12,7 @@ import io.minio.errors.*;
 import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.io.FileNotFoundException;
+import org.springframework.web.multipart.MultipartFile;
 
 import static io.github.xcvqqz.cloud_file_storage.entity.ResourceType.DIRECTORY;
 import static io.github.xcvqqz.cloud_file_storage.entity.ResourceType.FILE;
@@ -49,6 +48,33 @@ public class MinioService implements FileStorageService {
     public ResourceResponseDTO deleteResource(ResourceRequestDTO request) {
         return null;
     }
+
+
+
+
+
+    @Override
+    public void upload(String resourcePath, MultipartFile file) {
+
+        try {
+           minioClient.putObject(PutObjectArgs
+                    .builder()
+                    .bucket(BUCKET_NAME)
+                    .object(resourcePath)
+                    .stream(
+                            file.getInputStream(),
+                            file.getSize(),
+                            -1
+                    )
+                    .contentType(file.getContentType())
+                    .build());
+        } catch (Exception e){
+            throw new StorageException("Failed to upload file: " + file.getOriginalFilename());
+        }
+    }
+
+
+
 
 
     private DirectoryResponseDTO getDirectoryInfo(String path) {

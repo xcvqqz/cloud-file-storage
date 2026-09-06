@@ -64,6 +64,7 @@ public class UserService {
             UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
             userId = userDetails.getId();
             log.info("для данного пользователя получен id: {}", userId);
+            return userId;
         }
         throw new UsernameNotFoundException("пользователь не найден, либо не авторизован");
     }
