@@ -11,7 +11,7 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @SuperBuilder
 @NoArgsConstructor
-public class ResourceResponseDTO {
+public class ResourceResponse {
 
     private String path;
     private ResourceType type;

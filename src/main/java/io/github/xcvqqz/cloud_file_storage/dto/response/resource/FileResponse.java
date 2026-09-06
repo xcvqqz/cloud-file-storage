@@ -9,7 +9,7 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @SuperBuilder
 @NoArgsConstructor
-public class FileResponseDTO extends ResourceResponseDTO {
+public class FileResponse extends ResourceResponse {
 
    private String name;
    private long size;

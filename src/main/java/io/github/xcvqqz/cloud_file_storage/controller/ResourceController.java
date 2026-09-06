@@ -1,11 +1,9 @@
 package io.github.xcvqqz.cloud_file_storage.controller;
 
 
-import io.github.xcvqqz.cloud_file_storage.dto.request.ResourceRequestDTO;
-import io.github.xcvqqz.cloud_file_storage.dto.response.resource.ResourceResponseDTO;
-import io.github.xcvqqz.cloud_file_storage.service.file.ResourceService;
+import io.github.xcvqqz.cloud_file_storage.dto.request.ResourceRequest;
+import io.github.xcvqqz.cloud_file_storage.dto.response.resource.ResourceResponse;
 import io.github.xcvqqz.cloud_file_storage.service.file.ResourceServiceImpl;
-import io.github.xcvqqz.cloud_file_storage.service.storage.MinioService;
 import io.minio.errors.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,13 +29,13 @@ public class ResourceController {
 
 
     @GetMapping
-    public ResponseEntity<ResourceResponseDTO> getResourceInfo(@ModelAttribute ResourceRequestDTO request) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+    public ResponseEntity<ResourceResponse> getResourceInfo(@ModelAttribute ResourceRequest request) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
         return ResponseEntity.ok(resourceService.getResourceInfo(request));
     }
 
     @PostMapping
-    public ResponseEntity<ResourceResponseDTO> upload(@ModelAttribute ResourceRequestDTO request,
-                                                      @RequestParam("file") MultipartFile file){
+    public ResponseEntity<ResourceResponse> upload(@ModelAttribute ResourceRequest request,
+                                                   @RequestParam("file") MultipartFile file){
         return ResponseEntity.status(HttpStatus.CREATED).body(resourceService.upload(request, file));
     }
 

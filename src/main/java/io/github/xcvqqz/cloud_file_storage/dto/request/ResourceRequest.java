@@ -1,6 +1,6 @@
 package io.github.xcvqqz.cloud_file_storage.dto.request;
 
-public record ResourceRequestDTO(
+public record ResourceRequest(
         String path
 )
 {}

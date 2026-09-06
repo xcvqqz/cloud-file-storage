@@ -1,10 +1,10 @@
 package io.github.xcvqqz.cloud_file_storage.service.storage;
 
 
-import io.github.xcvqqz.cloud_file_storage.dto.request.ResourceRequestDTO;
-import io.github.xcvqqz.cloud_file_storage.dto.response.resource.DirectoryResponseDTO;
-import io.github.xcvqqz.cloud_file_storage.dto.response.resource.FileResponseDTO;
-import io.github.xcvqqz.cloud_file_storage.dto.response.resource.ResourceResponseDTO;
+import io.github.xcvqqz.cloud_file_storage.dto.request.ResourceRequest;
+import io.github.xcvqqz.cloud_file_storage.dto.response.resource.DirectoryResponse;
+import io.github.xcvqqz.cloud_file_storage.dto.response.resource.FileResponse;
+import io.github.xcvqqz.cloud_file_storage.dto.response.resource.ResourceResponse;
 import io.github.xcvqqz.cloud_file_storage.exception.ResourceNotFoundException;
 import io.github.xcvqqz.cloud_file_storage.exception.StorageException;
 import io.minio.*;
@@ -35,7 +35,7 @@ public class MinioService implements FileStorageService {
 
 
     @Override
-    public ResourceResponseDTO getResourceInfo(String path) {
+    public ResourceResponse getResourceInfo(String path) {
 //        int index = path.lastIndexOf('/');
 //        String result = path.substring(index + 1);
 
@@ -45,7 +45,7 @@ public class MinioService implements FileStorageService {
     }
 
     @Override
-    public ResourceResponseDTO deleteResource(ResourceRequestDTO request) {
+    public ResourceResponse deleteResource(ResourceRequest request) {
         return null;
     }
 
@@ -75,9 +75,7 @@ public class MinioService implements FileStorageService {
 
 
 
-
-
-    private DirectoryResponseDTO getDirectoryInfo(String path) {
+    private DirectoryResponse getDirectoryInfo(String path) {
 
         Iterable<Result<Item>> results = minioClient.listObjects(
                 ListObjectsArgs.builder()
@@ -94,14 +92,14 @@ public class MinioService implements FileStorageService {
             );
         }
 
-        return DirectoryResponseDTO.builder()
+        return DirectoryResponse.builder()
                 .path(path)
                 .type(DIRECTORY)
                 .build();
     }
 
 
-    private FileResponseDTO getFileInfo(String path) {
+    private FileResponse getFileInfo(String path) {
 
         try {
             StatObjectResponse response = minioClient.statObject(
@@ -112,7 +110,7 @@ public class MinioService implements FileStorageService {
             );
 
 
-            return FileResponseDTO.builder()
+            return FileResponse.builder()
                     .path(path)
                     .name(path)
                     .size(response.size())

@@ -8,6 +8,6 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @SuperBuilder
 @NoArgsConstructor
-public class DirectoryResponseDTO extends ResourceResponseDTO {
+public class DirectoryResponse extends ResourceResponse {
 
 }
