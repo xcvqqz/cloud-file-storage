@@ -92,7 +92,12 @@ public class MinioService implements FileStorageService {
                                 .object(path)
                                 .build()
                 );
-               return new InputStreamResource(inputStream);
+                return new InputStreamResource(inputStream);
+            } catch (ErrorResponseException e) {
+                if ("NoSuchKey".equals(e.errorResponse().code())) {
+                    throw new ResourceNotFoundException("Resource not found: " + path);
+                }
+                throw new StorageException("Failed to download resource: " + path, e);
 
             } catch (Exception e){
                 throw new StorageException("Failed to download resource: " + path, e);
