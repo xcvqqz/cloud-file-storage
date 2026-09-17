@@ -11,8 +11,19 @@ import io.minio.*;
 import io.minio.errors.*;
 import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import static io.github.xcvqqz.cloud_file_storage.entity.ResourceType.DIRECTORY;
 import static io.github.xcvqqz.cloud_file_storage.entity.ResourceType.FILE;
@@ -31,6 +42,8 @@ public class MinioService implements FileStorageService {
     private static final String FILE_NOT_FOUND_MESSAGE = "The file at the specified path was not found. " +
             "Please check that the file exists or that the path was entered correctly";
 
+
+
     private final MinioClient minioClient;
 
 
@@ -42,11 +55,6 @@ public class MinioService implements FileStorageService {
         return path.endsWith("/") ?
                 getDirectoryInfo(path) :
                 getFileInfo(path);
-    }
-
-    @Override
-    public ResourceResponse deleteResource(ResourceRequest request) {
-        return null;
     }
 
 
@@ -69,10 +77,74 @@ public class MinioService implements FileStorageService {
                     .contentType(file.getContentType())
                     .build());
         } catch (Exception e){
-            throw new StorageException("Failed to upload file: " + file.getOriginalFilename());
+            throw new StorageException("Failed to upload file: " + file.getOriginalFilename(), e);
         }
     }
 
+
+
+    @Override
+    public Resource downloadFile(String path){
+            try{
+                InputStream inputStream = minioClient.getObject(
+                        GetObjectArgs.builder()
+                                .bucket(BUCKET_NAME)
+                                .object(path)
+                                .build()
+                );
+               return new InputStreamResource(inputStream);
+
+            } catch (Exception e){
+                throw new StorageException("Failed to download resource: " + path, e);
+            }
+    }
+
+    @Override
+    public Resource downloadDirectory(String path) {
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+       try {
+
+           Iterable<Result<Item>> results = minioClient.listObjects(
+                   ListObjectsArgs.builder()
+                           .bucket(BUCKET_NAME)
+                           .prefix(path)
+                           .recursive(true)
+                           .build()
+           );
+
+           if (!results.iterator().hasNext()) {
+               throw new ResourceNotFoundException(
+                       DIRECTORY_NOT_FOUND_MESSAGE         //нужно изменить!!!!!!!!!!!!!!!!!!!!
+               );
+           }
+
+           try (ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream)) {
+
+               for (Result<Item> result : results) {
+                   Item item = result.get();
+                   String objectName = item.objectName();
+
+                   String relativePath = objectName.substring(path.length());
+
+                   ZipEntry zipEntry = new ZipEntry(relativePath);
+
+                   zipOutputStream.putNextEntry(zipEntry);
+
+                   try (InputStream inputStream = downloadFile(objectName).getInputStream()) {
+                       inputStream.transferTo(zipOutputStream);
+                   }
+                   zipOutputStream.closeEntry();
+               }
+           }
+       } catch (ResourceNotFoundException e){
+           throw e;
+       } catch (Exception e){
+           throw new StorageException("Failed to download resource: " + path, e);
+       }
+        return new ByteArrayResource(byteArrayOutputStream.toByteArray());
+    }
 
 
     private DirectoryResponse getDirectoryInfo(String path) {
@@ -126,7 +198,7 @@ public class MinioService implements FileStorageService {
             throw new StorageException("Failed to get file information");
 
         } catch (Exception e) {
-            throw new StorageException("Failed to get file information");
+            throw new StorageException("Failed to get file information", e);
         }
     }
 
@@ -143,4 +215,8 @@ public class MinioService implements FileStorageService {
             throw new RuntimeException(e.getMessage());
         }
     }
+
+
+
+
 }

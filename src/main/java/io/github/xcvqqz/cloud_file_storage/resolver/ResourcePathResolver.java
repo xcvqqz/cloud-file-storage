@@ -21,11 +21,20 @@ public class ResourcePathResolver {
         return String.format(
                 "user-%d-files/%s",
                 userId,
-                normalize(request.path()));
+                request.path());
     }
 
     public String resolve(ResourceRequest request, MultipartFile multipartFile){
-       return resolve(request) + multipartFile.getOriginalFilename();
+
+        Long userId = userService.getCurrentUserId();
+
+        String folderPath = normalize(request.path());
+
+        return String.format(
+                "user-%d-files/%s/%s",
+                userId,
+                folderPath,
+                multipartFile.getOriginalFilename());
     }
 
 

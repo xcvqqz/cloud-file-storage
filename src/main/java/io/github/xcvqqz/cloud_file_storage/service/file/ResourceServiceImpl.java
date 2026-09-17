@@ -8,8 +8,12 @@ import io.github.xcvqqz.cloud_file_storage.resolver.ResourcePathResolver;
 import io.github.xcvqqz.cloud_file_storage.service.auth.UserService;
 import io.github.xcvqqz.cloud_file_storage.service.storage.MinioService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamSource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.InputStream;
 
 @Service
 @RequiredArgsConstructor
@@ -42,17 +46,25 @@ public class ResourceServiceImpl implements ResourceService {
                 .size(file.getSize())
                 .type(ResourceType.FILE)
                 .build();
+    }
+
+
+    @Override
+    public Resource download(ResourceRequest request) {
+
+        String path = pathResolver.resolve(request);
+
+        return path.endsWith("/")
+                ? minioService.downloadDirectory(path)
+                : minioService.downloadFile(path);
+
 
     }
 
+    private Resource downloadFile(String path){
+        return minioService.downloadFile(path);
+    }
+
+
+
 }
-
-
-
-
-
-
-
-
-
-

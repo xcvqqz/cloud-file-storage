@@ -28,7 +28,7 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
 
-    runtimeOnly("org.postgresql:postgresql")
+    implementation("org.postgresql:postgresql")
 
     runtimeOnly("org.liquibase:liquibase-core")
 

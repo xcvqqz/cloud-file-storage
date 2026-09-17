@@ -6,12 +6,15 @@ import io.github.xcvqqz.cloud_file_storage.dto.response.resource.ResourceRespons
 import io.github.xcvqqz.cloud_file_storage.service.file.ResourceServiceImpl;
 import io.minio.errors.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
@@ -38,6 +41,30 @@ public class ResourceController {
                                                    @RequestParam("file") MultipartFile file){
         return ResponseEntity.status(HttpStatus.CREATED).body(resourceService.upload(request, file));
     }
+
+
+    //нужно сделать проверки на 2 слеша, несуществующий путь, пустой путь, скачивание файла, скачивание папки
+
+    @GetMapping("/download")
+    public ResponseEntity<Resource> download(@ModelAttribute ResourceRequest request) {
+
+        Resource resource = resourceService.download(request);
+
+        String fileName = Paths.get(request.path())
+                .getFileName()
+                .toString();
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .headers(httpHeaders ->
+                        httpHeaders.setContentDisposition(
+                                ContentDisposition.attachment()
+                                        .filename(fileName)
+                                        .build()))
+                .body(resource);
+    }
+
+
 
 //
 //    @DeleteMapping

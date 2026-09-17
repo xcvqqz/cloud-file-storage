@@ -35,9 +35,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({RolesNotFoundException.class,
             ResourceNotFoundException.class})
-    public ResponseEntity<ErrorResponse> handleNotFoundException(RolesNotFoundException ex,  HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleNotFoundException(Exception ex,  HttpServletRequest request) {
 
-        log.warn("Entity not found: URI={}, type={}, msg={}",
+        log.warn("Not found: URI={}, type={}, msg={}",
                 request.getRequestURI(), ex.getClass().getSimpleName(), ex.getMessage());
 
         return ResponseEntity
@@ -118,12 +118,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleStorageException(StorageException ex, HttpServletRequest request) {
 
         log.error("Storage error: URI={}, type={}, msg={}",
-                request.getRequestURI(), ex.getClass().getSimpleName(), ex.getMessage());
+                request.getRequestURI(), ex.getClass().getSimpleName(), ex.getMessage(), ex);
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(
-                        buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request));
+                .body(buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request));
     }
 
 
@@ -135,7 +134,7 @@ public class GlobalExceptionHandler {
             throw (RuntimeException) ex;
         }
 
-        log.error("INTERNAL SERVER ERROR MESSAGE: URI={}, type={}, msg={}",
+        log.error("Internal server error message: URI={}, type={}, msg={}",
                 request.getRequestURI(), ex.getClass().getSimpleName(), ex.getMessage());
 
         return ResponseEntity
