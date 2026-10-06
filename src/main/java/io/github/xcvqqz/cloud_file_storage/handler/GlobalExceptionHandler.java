@@ -72,8 +72,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(
-                        buildErrorResponse(HttpStatus.BAD_REQUEST, String.join(", ", errorMessages), request));
+                .body(buildErrorResponse(HttpStatus.BAD_REQUEST, String.join(", ", errorMessages), request));
     }
 
     @ExceptionHandler(PasswordMismatchException.class)
@@ -89,8 +88,20 @@ public class GlobalExceptionHandler {
                         buildErrorResponse(HttpStatus.BAD_REQUEST, MISSMATCH_PASSWORDS_ERROR, request));
     }
 
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorResponse> badRequestException(BadRequestException ex, HttpServletRequest request) {
 
-    @ExceptionHandler({DataIntegrityViolationException.class, ConstraintViolationException.class})
+        log.warn("Bad request: URI={}, type={}, msg={}",
+                request.getRequestURI(), ex.getClass().getSimpleName(), ex.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(
+                        buildErrorResponse(HttpStatus.BAD_REQUEST, MISSMATCH_PASSWORDS_ERROR, request));
+    }
+
+
+    @ExceptionHandler({DataIntegrityViolationException.class, ConstraintViolationException.class, ResourceAlreadyExistsException.class})
     public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(Exception ex, HttpServletRequest request) {
 
         log.warn("Conflict: URI={}, type={}, msg={}",

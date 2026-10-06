@@ -3,17 +3,15 @@ package io.github.xcvqqz.cloud_file_storage.controller;
 
 import io.github.xcvqqz.cloud_file_storage.dto.request.ResourceRequest;
 import io.github.xcvqqz.cloud_file_storage.dto.response.resource.ResourceResponse;
-import io.github.xcvqqz.cloud_file_storage.service.file.ResourceServiceImpl;
+import io.github.xcvqqz.cloud_file_storage.service.resource.*;
 import io.minio.errors.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -23,23 +21,22 @@ import java.security.NoSuchAlgorithmException;
 @RequestMapping("/api/resource")
 public class ResourceController {
 
-    private final ResourceServiceImpl resourceService;
+    private final GetResourceInfoService getResourceInfoService;
+    private final DownloadResourceService downloadResourceService;
+    private final MoveOrRenameResourceService moveOrRenameResourceService;
+    private final UploadResourceService uploadResourceService;
 
-//    @GetMapping("/bucket/{bucketName}")
-//    public boolean bucketExist(@PathVariable String bucketName) {
-//        return minioService.bucketExist(bucketName);
-//    }
 
 
     @GetMapping
     public ResponseEntity<ResourceResponse> getResourceInfo(@ModelAttribute ResourceRequest request) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
-        return ResponseEntity.ok(resourceService.getResourceInfo(request));
+        return ResponseEntity.ok(getResourceInfoService.getResourceInfo(request));
     }
 
     @PostMapping
     public ResponseEntity<ResourceResponse> upload(@ModelAttribute ResourceRequest request,
                                                    @RequestParam("file") MultipartFile file){
-        return ResponseEntity.status(HttpStatus.CREATED).body(resourceService.upload(request, file));
+        return ResponseEntity.status(HttpStatus.CREATED).body(uploadResourceService.upload(request, file));
     }
 
 
@@ -48,7 +45,7 @@ public class ResourceController {
     @GetMapping("/download")
     public ResponseEntity<Resource> download(@ModelAttribute ResourceRequest request) {
 
-        Resource resource = resourceService.download(request);
+        Resource resource = downloadResourceService.download(request);
 
         String fileName = Paths.get(request.path())
                 .getFileName()
@@ -62,6 +59,13 @@ public class ResourceController {
                                         .filename(fileName)
                                         .build()))
                 .body(resource);
+    }
+
+
+    @PostMapping("/move")
+    public ResponseEntity<ResourceResponse> move(@ModelAttribute("from") ResourceRequest from,
+                                  @ModelAttribute("to") ResourceRequest to) {
+        return ResponseEntity.status(HttpStatus.OK).body(moveOrRenameResourceService.moveOrRename(from, to));
     }
 
 

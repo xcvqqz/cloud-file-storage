@@ -1,7 +1,6 @@
-package io.github.xcvqqz.cloud_file_storage.service.storage;
+package io.github.xcvqqz.cloud_file_storage.storage;
 
 
-import io.github.xcvqqz.cloud_file_storage.dto.request.ResourceRequest;
 import io.github.xcvqqz.cloud_file_storage.dto.response.resource.DirectoryResponse;
 import io.github.xcvqqz.cloud_file_storage.dto.response.resource.FileResponse;
 import io.github.xcvqqz.cloud_file_storage.dto.response.resource.ResourceResponse;
@@ -11,27 +10,26 @@ import io.minio.*;
 import io.minio.errors.*;
 import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import static io.github.xcvqqz.cloud_file_storage.entity.ResourceType.DIRECTORY;
 import static io.github.xcvqqz.cloud_file_storage.entity.ResourceType.FILE;
 
-
+@Slf4j
 @RequiredArgsConstructor
-@Service
-public class MinioService implements FileStorageService {
+@Component
+public class MinioStorage implements ObjectStorage {
 
     private static final String BUCKET_NAME = "user-files";
 
@@ -55,6 +53,100 @@ public class MinioService implements FileStorageService {
         return path.endsWith("/") ?
                 getDirectoryInfo(path) :
                 getFileInfo(path);
+    }
+
+
+    public void moveFile(String from, String to) {
+
+        try {
+            minioClient.copyObject(
+                    CopyObjectArgs.builder()
+                            .bucket(BUCKET_NAME)
+                            .object(to)
+                            .source(
+                                    CopySource.builder()
+                                            .bucket(BUCKET_NAME)
+                                            .object(from)
+                                            .build()
+                            )
+                            .build()
+            );
+
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(BUCKET_NAME)
+                            .object(from)
+                            .build()
+            );
+
+        } catch (Exception e){
+            throw new StorageException("произошла ошибка при изменение имени файла", e);
+        }
+    }
+
+    public void moveDirectory(String from, String to)  {
+
+        try {
+            Iterable<Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs.builder()
+                            .bucket(BUCKET_NAME)
+                            .prefix(from)
+                            .recursive(true)
+                            .build()
+            );
+
+            for (Result<Item> result : results) {
+
+                Item item = result.get();
+                String sourceObject = item.objectName();
+                String relativePath =
+                        sourceObject.substring(from.length());
+
+                String targetObject =
+                        to + relativePath;
+
+                minioClient.copyObject(
+                        CopyObjectArgs.builder()
+                                .bucket(BUCKET_NAME)
+                                .object(targetObject)
+                                .source(
+                                        CopySource.builder()
+                                                .bucket(BUCKET_NAME)
+                                                .object(sourceObject)
+                                                .build()
+                                )
+                                .build()
+                );
+            }
+            
+
+            results = minioClient.listObjects(
+                    ListObjectsArgs.builder()
+                            .bucket(BUCKET_NAME)
+                            .prefix(from)
+                            .recursive(true)
+                            .build()
+            );
+
+            for (Result<Item> result : results) {
+
+                String objectName = result.get().objectName();
+
+                minioClient.removeObject(
+                        RemoveObjectArgs.builder()
+                                .bucket(BUCKET_NAME)
+                                .object(objectName)
+                                .build()
+                );
+            }
+
+        } catch (Exception e) {
+
+            throw new StorageException(
+                    "Failed to move directory from " + from + " to " + to,
+                    e
+            );
+        }
     }
 
 
@@ -207,6 +299,52 @@ public class MinioService implements FileStorageService {
         }
     }
 
+    public boolean resourceExists(String resourcePath){
+        if(resourcePath.endsWith("/")){
+            return directoryExists(resourcePath);
+        } else {
+            return fileExists(resourcePath);
+        }
+    }
+
+    private boolean fileExists(String filePath){
+        try {
+            minioClient.statObject(
+                    StatObjectArgs.builder()
+                            .bucket(BUCKET_NAME)
+                            .object(filePath)
+                            .build()
+            );
+            return true;
+        } catch (ErrorResponseException e) {
+            if ("NoSuchKey".equals(e.errorResponse().code())) {
+                return false;
+            }
+            throw new StorageException("An error occurred while retrieving information about the availability (boolean) of the resource");
+        } catch (Exception e) {
+            throw new StorageException("Failed to get file exist information", e);
+        }
+    }
+
+    private boolean directoryExists(String directoryPath){
+
+        try {
+            Iterable<Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs.builder()
+                            .bucket(BUCKET_NAME)
+                            .prefix(directoryPath)
+                            .recursive(false)
+                            .maxKeys(1)
+                            .build()
+            );
+            return results.iterator().hasNext();
+        } catch (Exception e) {
+            log.error("An error occurred while checking the uniqueness of the directory");
+            throw new StorageException("An error occurred while working with a file or directory" + directoryPath, e);
+        }
+    }
+
+
     @Override
     public boolean bucketExist(String bucketName) {
         try {
@@ -220,8 +358,4 @@ public class MinioService implements FileStorageService {
             throw new RuntimeException(e.getMessage());
         }
     }
-
-
-
-
 }

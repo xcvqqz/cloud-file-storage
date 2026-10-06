@@ -2,6 +2,8 @@ package io.github.xcvqqz.cloud_file_storage.resolver;
 
 
 import io.github.xcvqqz.cloud_file_storage.dto.request.ResourceRequest;
+import io.github.xcvqqz.cloud_file_storage.entity.ResourceType;
+import io.github.xcvqqz.cloud_file_storage.exception.BadRequestException;
 import io.github.xcvqqz.cloud_file_storage.service.auth.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -23,6 +25,8 @@ public class ResourcePathResolver {
                 userId,
                 request.path());
     }
+
+
 
     public String resolve(ResourceRequest request, MultipartFile multipartFile){
 
