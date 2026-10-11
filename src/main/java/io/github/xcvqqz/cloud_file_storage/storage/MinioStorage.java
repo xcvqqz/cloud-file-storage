@@ -47,8 +47,6 @@ public class MinioStorage implements ObjectStorage {
 
     @Override
     public ResourceResponse getResourceInfo(String path) {
-//        int index = path.lastIndexOf('/');
-//        String result = path.substring(index + 1);
 
         return path.endsWith("/") ?
                 getDirectoryInfo(path) :
@@ -148,9 +146,6 @@ public class MinioStorage implements ObjectStorage {
             );
         }
     }
-
-
-
 
 
     @Override
@@ -278,10 +273,14 @@ public class MinioStorage implements ObjectStorage {
                             .build()
             );
 
+            int lastSlash = path.lastIndexOf('/');
+
+            String parentPath = path.substring(0, lastSlash + 1);
+            String fileName = path.substring(lastSlash + 1);
 
             return FileResponse.builder()
-                    .path(path)
-                    .name(path)
+                    .path(parentPath)
+                    .name(fileName)
                     .size(response.size())
                     .type(FILE)
                     .build();

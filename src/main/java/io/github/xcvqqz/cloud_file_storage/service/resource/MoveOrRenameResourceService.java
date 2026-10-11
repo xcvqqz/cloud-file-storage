@@ -4,11 +4,13 @@ package io.github.xcvqqz.cloud_file_storage.service.resource;
 import io.github.xcvqqz.cloud_file_storage.dto.request.ResourceRequest;
 import io.github.xcvqqz.cloud_file_storage.dto.response.resource.ResourceResponse;
 import io.github.xcvqqz.cloud_file_storage.entity.ResourceType;
+import io.github.xcvqqz.cloud_file_storage.exception.BadRequestException;
 import io.github.xcvqqz.cloud_file_storage.exception.ResourceAlreadyExistsException;
 import io.github.xcvqqz.cloud_file_storage.exception.ResourceNotFoundException;
 import io.github.xcvqqz.cloud_file_storage.exception.StorageException;
 import io.github.xcvqqz.cloud_file_storage.resolver.ResourcePathResolver;
 import io.github.xcvqqz.cloud_file_storage.storage.MinioStorage;
+import io.github.xcvqqz.cloud_file_storage.validator.ResourcePathValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,13 +20,20 @@ public class MoveOrRenameResourceService {
 
     private final MinioStorage minioStorage;
     private final ResourcePathResolver pathResolver;
+    private final GetResourceInfoService getResourceInfoService;
+    private final ResourcePathValidator resourcePathValidator;
 
     public ResourceResponse moveOrRename(ResourceRequest from, ResourceRequest to){
 
-        //сюда бы валидацию еще!!
+        resourcePathValidator.validate(from);
+        resourcePathValidator.validate(to);
 
         String fromPath = pathResolver.resolve(from);
         String toPath = pathResolver.resolve(to);
+
+        if(fromPath.equals(toPath)){
+            throw new BadRequestException("путь source и путь target должны быть разными");
+        }
 
         if (!minioStorage.resourceExists(fromPath)) {
             throw new ResourceNotFoundException(
@@ -41,13 +50,12 @@ public class MoveOrRenameResourceService {
 
         if(ResourceType.FILE.equals(typeFrom)){
             minioStorage.moveFile(fromPath, toPath);
-            return buildFileResponse();
         } else if (ResourceType.DIRECTORY.equals(typeFrom)){
             minioStorage.moveDirectory(fromPath, toPath);
-            return buildDirectoryResponse();
         } else {
             throw new StorageException("не получилось осуществить перемещение или переименование объекта");
         }
+        return getResourceInfoService.getResourceInfo(to);
     }
 
 

@@ -7,6 +7,8 @@ import io.github.xcvqqz.cloud_file_storage.dto.response.resource.ResourceRespons
 import io.github.xcvqqz.cloud_file_storage.entity.ResourceType;
 import io.github.xcvqqz.cloud_file_storage.resolver.ResourcePathResolver;
 import io.github.xcvqqz.cloud_file_storage.storage.MinioStorage;
+import io.github.xcvqqz.cloud_file_storage.validator.FileValidator;
+import io.github.xcvqqz.cloud_file_storage.validator.ResourcePathValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,8 +19,13 @@ public class UploadResourceService {
 
     private final ResourcePathResolver pathResolver;
     private final MinioStorage minioStorage;
+    private final ResourcePathValidator resourcePathValidator;
+    private final FileValidator fileValidator;
 
     public ResourceResponse upload(ResourceRequest request, MultipartFile file) {
+
+        fileValidator.validate(file);
+        resourcePathValidator.validate(request);
 
         String path = pathResolver.resolve(request, file);
 

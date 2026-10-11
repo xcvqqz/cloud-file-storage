@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(buildErrorResponse(HttpStatus.NOT_FOUND, ENTITY_NOT_FOUND_MESSAGE, request));
+                .body(buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
@@ -97,7 +97,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(
-                        buildErrorResponse(HttpStatus.BAD_REQUEST, MISSMATCH_PASSWORDS_ERROR, request));
+                        buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request));
     }
 
 
