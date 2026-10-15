@@ -20,19 +20,20 @@ public class ResourcePathResolver {
 
        Long userId = userService.getCurrentUserId();
 
-        return String.format(
+       return String.format(
                 "user-%d-files/%s",
                 userId,
                 request.path());
     }
 
 
-
     public String resolve(ResourceRequest request, MultipartFile multipartFile){
 
         Long userId = userService.getCurrentUserId();
 
-        String folderPath = normalize(request.path());
+        String folderPath = request.path().endsWith("/") ?
+                            request.path()  :
+                            request.path() + "/";
 
         return String.format(
                 "user-%d-files/%s/%s",
@@ -42,13 +43,5 @@ public class ResourcePathResolver {
     }
 
 
-    private String normalize(String path) {
-        if (path == null || path.isBlank()) {
-            return "";
-        }
-        return path.endsWith("/")
-                ? path
-                : path + "/";
-    }
 
 }

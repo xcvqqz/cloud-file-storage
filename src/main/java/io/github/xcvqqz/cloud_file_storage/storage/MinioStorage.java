@@ -4,11 +4,13 @@ package io.github.xcvqqz.cloud_file_storage.storage;
 import io.github.xcvqqz.cloud_file_storage.dto.response.resource.DirectoryResponse;
 import io.github.xcvqqz.cloud_file_storage.dto.response.resource.FileResponse;
 import io.github.xcvqqz.cloud_file_storage.dto.response.resource.ResourceResponse;
+import io.github.xcvqqz.cloud_file_storage.entity.ResourceType;
 import io.github.xcvqqz.cloud_file_storage.exception.ResourceNotFoundException;
 import io.github.xcvqqz.cloud_file_storage.exception.StorageException;
 import io.minio.*;
 import io.minio.errors.*;
 import io.minio.messages.Item;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
@@ -18,8 +20,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -322,6 +330,87 @@ public class MinioStorage implements ObjectStorage {
             throw new StorageException("An error occurred while retrieving information about the availability (boolean) of the resource");
         } catch (Exception e) {
             throw new StorageException("Failed to get file exist information", e);
+        }
+    }
+
+    public DirectoryResponse createDirectory(String path) {
+
+        try {
+          minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(BUCKET_NAME)
+                            .object(path)
+                            .stream(
+                                    new ByteArrayInputStream(new byte[0]),
+                                    0,
+                                    -1
+                            )
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new StorageException(
+                    "Failed to create directory: " + path,
+                    e
+            );
+        }
+        return DirectoryResponse.builder()
+                .path(path.substring(path.indexOf("/")+1))
+                .type(DIRECTORY)
+                .build();
+    }
+
+    public List<ResourceResponse> searchResources(String query, String userRoot)  {
+
+
+        //не отображаются папки!!!!!!!!!!!!!!!!
+
+        try {
+            Iterable<Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs.builder()
+                            .bucket(BUCKET_NAME)
+                            .prefix(userRoot)
+                            .recursive(true)
+                            .build()
+            );
+
+            List<ResourceResponse> foundResources = new ArrayList<>();
+
+            for (Result<Item> result : results) {
+
+                Item item = result.get();
+                Path pathItem = Path.of(item.objectName());
+
+                String parentPath = pathItem.getParent().toString() != null ? pathItem.getParent().toString() + "/" : "";
+
+                String fileName = pathItem.getFileName().toString() != null ? pathItem.getFileName().toString() : "";
+
+                Long size = !(item.size() == 0) ? item.size() : null;
+
+                boolean isDirectory = item.objectName().endsWith("/");
+
+                if (fileName.toLowerCase().contains(query.toLowerCase())) {
+                    if (isDirectory) {
+                        foundResources.add(DirectoryResponse.builder()
+                                        .path(pathItem.toString())
+                                        .type(DIRECTORY)
+                                        .build());
+                    } else {
+                        foundResources.add(FileResponse.builder()
+                                .path(parentPath)
+                                .name(fileName)
+                                .size(size)
+                                .type(FILE)
+                                .build());
+                    }
+                }
+            }
+
+            if(foundResources.isEmpty()){
+                throw new ResourceNotFoundException("No resources were found for your request, please try searching for your resource using a different keyword");
+            }
+            return foundResources;
+        } catch (Exception e) {
+            throw new StorageException("An error occurred while retrieving the list of resources for the request - '" + query + "' , please try again", e);
         }
     }
 

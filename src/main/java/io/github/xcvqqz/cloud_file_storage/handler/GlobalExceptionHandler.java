@@ -110,7 +110,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(
-                        buildErrorResponse(HttpStatus.CONFLICT, CONFLICT_ERROR_MESSAGE, request));
+                        buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage(), request));
     }
 
     @ExceptionHandler(DataBaseException.class)

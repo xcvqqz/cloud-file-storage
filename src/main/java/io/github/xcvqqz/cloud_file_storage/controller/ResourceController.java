@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,6 +26,7 @@ public class ResourceController {
     private final DownloadResourceService downloadResourceService;
     private final MoveOrRenameResourceService moveOrRenameResourceService;
     private final UploadResourceService uploadResourceService;
+    private final SearchResourceService searchResourceService;
 
 
 
@@ -38,9 +40,6 @@ public class ResourceController {
                                                    @RequestParam("file") MultipartFile file){
         return ResponseEntity.status(HttpStatus.CREATED).body(uploadResourceService.upload(request, file));
     }
-
-
-    //нужно сделать проверки на 2 слеша, несуществующий путь, пустой путь, скачивание файла, скачивание папки
 
     @GetMapping("/download")
     public ResponseEntity<Resource> download(@ModelAttribute ResourceRequest request) {
@@ -66,6 +65,11 @@ public class ResourceController {
     public ResponseEntity<ResourceResponse> move(@ModelAttribute("from") ResourceRequest from,
                                   @ModelAttribute("to") ResourceRequest to) {
         return ResponseEntity.status(HttpStatus.OK).body(moveOrRenameResourceService.moveOrRename(from, to));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<ResourceResponse>> search(@ModelAttribute("query") ResourceRequest query){
+        return ResponseEntity.status(HttpStatus.OK).body(searchResourceService.search(query));
     }
 
 

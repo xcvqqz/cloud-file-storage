@@ -12,7 +12,8 @@ public class FileValidator {
     private static final String FILE_NULL_MESSAGE = "File must not be null";
     private static final String FILE_NAME_NULL_MESSAGE = "File name must not be null";
 
-    public void validate(MultipartFile file) {
+    public
+    void validate(MultipartFile file) {
         if (file == null) {
             throw new BadRequestException(FILE_NULL_MESSAGE);
         }
