@@ -7,6 +7,7 @@ import io.github.xcvqqz.cloud_file_storage.dto.response.resource.ResourceRespons
 import io.github.xcvqqz.cloud_file_storage.entity.ResourceType;
 import io.github.xcvqqz.cloud_file_storage.exception.ResourceNotFoundException;
 import io.github.xcvqqz.cloud_file_storage.exception.StorageException;
+import io.github.xcvqqz.cloud_file_storage.mapper.ResourceMapper;
 import io.minio.*;
 import io.minio.errors.*;
 import io.minio.messages.Item;
@@ -16,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -49,7 +51,7 @@ public class MinioStorage implements ObjectStorage {
             "Please check that the file exists or that the path was entered correctly";
 
 
-
+    private final ResourceMapper resourceMapper;
     private final MinioClient minioClient;
 
 
@@ -62,10 +64,12 @@ public class MinioStorage implements ObjectStorage {
     }
 
 
-    public void moveFile(String from, String to) {
+    public  FileResponse moveFile(String from, String to) {
+
+        StatObjectResponse response;
 
         try {
-            minioClient.copyObject(
+             minioClient.copyObject(
                     CopyObjectArgs.builder()
                             .bucket(BUCKET_NAME)
                             .object(to)
@@ -75,6 +79,13 @@ public class MinioStorage implements ObjectStorage {
                                             .object(from)
                                             .build()
                             )
+                            .build()
+            );
+
+            response = minioClient.statObject(
+                    StatObjectArgs.builder()
+                            .bucket(BUCKET_NAME)
+                            .object(to)
                             .build()
             );
 
@@ -88,9 +99,10 @@ public class MinioStorage implements ObjectStorage {
         } catch (Exception e){
             throw new StorageException("произошла ошибка при изменение имени файла", e);
         }
+        return resourceMapper.toFileResponse(to, response);
     }
 
-    public void moveDirectory(String from, String to)  {
+    public DirectoryResponse moveDirectory(String from, String to)  {
 
         try {
             Iterable<Result<Item>> results = minioClient.listObjects(
@@ -153,6 +165,8 @@ public class MinioStorage implements ObjectStorage {
                     e
             );
         }
+
+        return resourceMapper.toDirectoryResponse(to);
     }
 
 
@@ -249,25 +263,51 @@ public class MinioStorage implements ObjectStorage {
 
     private DirectoryResponse getDirectoryInfo(String path) {
 
+        try {
+            Iterable<Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs.builder()
+                            .bucket(BUCKET_NAME)
+                            .prefix(path)
+                            .recursive(false)
+                            .maxKeys(1)
+                            .build()
+            );
+
+            Iterator<Result<Item>> iterator = results.iterator();
+
+            if (!iterator.hasNext()) {
+                throw new ResourceNotFoundException(
+                        DIRECTORY_NOT_FOUND_MESSAGE
+                );
+            }
+            iterator.next().get();
+
+            return resourceMapper.toDirectoryResponse(path.substring(path.indexOf("/")));
+
+        } catch (ResourceNotFoundException e){
+            throw e;
+        } catch (Exception e){
+            throw new StorageException("Failed to get directory info: ", e);
+        }
+
+    }
+
+    public List<ResourceResponse> getContentByDirectory(String path) {
+
         Iterable<Result<Item>> results = minioClient.listObjects(
                 ListObjectsArgs.builder()
                         .bucket(BUCKET_NAME)
                         .prefix(path)
                         .recursive(false)
-                        .maxKeys(1)
                         .build()
         );
 
-        if (!results.iterator().hasNext()) {
-            throw new ResourceNotFoundException(
-                    DIRECTORY_NOT_FOUND_MESSAGE
-            );
-        }
+      List<ResourceResponse> resources = new ArrayList<>();
 
-        return DirectoryResponse.builder()
-                .path(path)
-                .type(DIRECTORY)
-                .build();
+         for(Result<Item> result : results) {
+
+      }
+
     }
 
 
@@ -281,24 +321,12 @@ public class MinioStorage implements ObjectStorage {
                             .build()
             );
 
-            int lastSlash = path.lastIndexOf('/');
-
-            String parentPath = path.substring(0, lastSlash + 1);
-            String fileName = path.substring(lastSlash + 1);
-
-            return FileResponse.builder()
-                    .path(parentPath)
-                    .name(fileName)
-                    .size(response.size())
-                    .type(FILE)
-                    .build();
+            return resourceMapper.toFileResponse(path, response);
 
         } catch (ErrorResponseException e) {
-
             if ("NoSuchKey".equals(e.errorResponse().code())) {
                 throw new ResourceNotFoundException(FILE_NOT_FOUND_MESSAGE);
             }
-
             throw new StorageException("Failed to get file information");
 
         } catch (Exception e) {

@@ -31,31 +31,27 @@ public class MoveOrRenameResourceService {
         String fromPath = pathResolver.resolve(from);
         String toPath = pathResolver.resolve(to);
 
+        ResourceResponse response;
+
         if(fromPath.equals(toPath)){
             throw new BadRequestException("путь source и путь target должны быть разными");
         }
 
-        if (!minioStorage.resourceExists(fromPath)) {
-            throw new ResourceNotFoundException(
-                    "Resource at path '" + from.path() + "' was not found"
-            );
-        }
+        ResourceResponse source = minioStorage.getResourceInfo(fromPath);
 
         if(minioStorage.resourceExists(toPath)){
             throw new ResourceAlreadyExistsException("The resource at path \"to\" already exists, conflict");
         }
 
-        ResourceType typeFrom = minioStorage.getResourceInfo(fromPath).getType();
 
-
-        if(ResourceType.FILE.equals(typeFrom)){
-            minioStorage.moveFile(fromPath, toPath);
-        } else if (ResourceType.DIRECTORY.equals(typeFrom)){
-            minioStorage.moveDirectory(fromPath, toPath);
+        if(ResourceType.FILE.equals(source.getType())){
+            response = minioStorage.moveFile(fromPath, toPath);
+        } else if (ResourceType.DIRECTORY.equals(source.getType())){
+            response = minioStorage.moveDirectory(fromPath, toPath);
         } else {
             throw new StorageException("не получилось осуществить перемещение или переименование объекта");
         }
-        return getResourceInfoService.getResourceInfo(to);
+        return response;
     }
 
 
