@@ -185,6 +185,7 @@ public class MinioStorage implements ObjectStorage {
                     )
                     .contentType(file.getContentType())
                     .build());
+
         } catch (Exception e){
             throw new StorageException("Failed to upload file: " + file.getOriginalFilename(), e);
         }
@@ -292,22 +293,57 @@ public class MinioStorage implements ObjectStorage {
 
     }
 
-    public List<ResourceResponse> getContentByDirectory(String path) {
+    public List<ResourceResponse> getContentByDirectory(String path)  {
 
-        Iterable<Result<Item>> results = minioClient.listObjects(
-                ListObjectsArgs.builder()
-                        .bucket(BUCKET_NAME)
-                        .prefix(path)
-                        .recursive(false)
-                        .build()
-        );
+        List<ResourceResponse> resources;
 
-      List<ResourceResponse> resources = new ArrayList<>();
+        try {
+            Iterable<Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs.builder()
+                            .bucket(BUCKET_NAME)
+                            .prefix(path)
+                            .recursive(false)
+                            .build()
+            );
 
-         for(Result<Item> result : results) {
+            resources = new ArrayList<>();
 
-      }
+            for (Result<Item> result : results) {
 
+                Item item = result.get();
+                String objectName = item.objectName();
+
+                if(objectName.equals(path)){
+                    continue;
+                }
+
+                String cleanPathName = objectName.substring(objectName.indexOf("/") + 1);
+
+
+                if (item.isDir()) {
+                    resources.add(
+                            DirectoryResponse.builder()
+                                    .path(cleanPathName)
+                                    .type(DIRECTORY)
+                                    .build());
+                } else {
+
+                    String fileName = cleanPathName.substring(cleanPathName.lastIndexOf("/") + 1);
+                    String parentPath = cleanPathName.substring(0, cleanPathName.lastIndexOf("/"));
+
+                    resources.add(
+                            FileResponse.builder()
+                                    .path(parentPath)
+                                    .name(fileName)
+                                    .size(item.size())
+                                    .type(FILE)
+                                    .build());
+                }
+            }
+        } catch (Exception e){
+            throw new StorageException(e.getMessage());
+        }
+      return resources;
     }
 
 
@@ -373,18 +409,16 @@ public class MinioStorage implements ObjectStorage {
                                     0,
                                     -1
                             )
-                            .build()
-            );
+                            .build());
+
+          return resourceMapper.toDirectoryResponse(path.substring(path.indexOf("/")+1));
+
         } catch (Exception e) {
             throw new StorageException(
                     "Failed to create directory: " + path,
                     e
             );
         }
-        return DirectoryResponse.builder()
-                .path(path.substring(path.indexOf("/")+1))
-                .type(DIRECTORY)
-                .build();
     }
 
     public List<ResourceResponse> searchResources(String query, String userRoot)  {

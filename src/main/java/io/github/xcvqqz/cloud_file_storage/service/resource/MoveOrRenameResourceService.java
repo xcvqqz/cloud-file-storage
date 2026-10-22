@@ -43,7 +43,6 @@ public class MoveOrRenameResourceService {
             throw new ResourceAlreadyExistsException("The resource at path \"to\" already exists, conflict");
         }
 
-
         if(ResourceType.FILE.equals(source.getType())){
             response = minioStorage.moveFile(fromPath, toPath);
         } else if (ResourceType.DIRECTORY.equals(source.getType())){

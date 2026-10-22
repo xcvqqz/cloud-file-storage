@@ -15,7 +15,6 @@ public class ResourcePathResolver {
 
     private final UserService userService;
 
-
     public String resolve(ResourceRequest request){
 
        Long userId = userService.getCurrentUserId();

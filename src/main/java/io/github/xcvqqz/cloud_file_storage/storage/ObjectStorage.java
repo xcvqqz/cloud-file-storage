@@ -1,6 +1,7 @@
 package io.github.xcvqqz.cloud_file_storage.storage;
 
 
+import io.github.xcvqqz.cloud_file_storage.dto.response.resource.FileResponse;
 import io.github.xcvqqz.cloud_file_storage.dto.response.resource.ResourceResponse;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;

@@ -2,6 +2,7 @@ package io.github.xcvqqz.cloud_file_storage.integration.authentication;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.xcvqqz.cloud_file_storage.configuration.AbstractIntegrationTest;
+import io.github.xcvqqz.cloud_file_storage.utils.TestDataFactory;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

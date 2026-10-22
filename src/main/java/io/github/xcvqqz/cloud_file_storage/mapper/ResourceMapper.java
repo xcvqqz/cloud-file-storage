@@ -13,6 +13,7 @@ import io.minio.StatObjectResponse;
 import io.minio.messages.Item;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 
 @Mapper(componentModel = "spring")
 public interface ResourceMapper {
@@ -20,26 +21,27 @@ public interface ResourceMapper {
 
     ResourceResponse ToResourceResponse(StatObjectResponse statObjectResponse);
 
+    @Mapping(target = "name", source = "path", qualifiedByName = "fileName")
+    @Mapping(target = "path", source = "path", qualifiedByName = "parentPath")
+    @Mapping(target = "size", expression = "java(response.size())")
+    @Mapping(target = "type", constant = "FILE")
+    FileResponse toFileResponse(String path, StatObjectResponse response);
 
     @Mapping(target = "path", source = "path")
     @Mapping(target = "type", constant = "DIRECTORY")
     DirectoryResponse toDirectoryResponse(String path);
 
-    @Mapping(target = "name", expression = "java(getFileName(path))")
-    @Mapping(target = "path", expression = "java(getParentPath(path))")
-    @Mapping(target = "size", source = "response.size")
-    @Mapping(target = "type", constant = "FILE")
-    FileResponse toFileResponse(String path, StatObjectResponse response);
-
+    @Named("fileName")
     default String getFileName(String path) {
         int lastSlash = path.lastIndexOf('/');
         return path.substring(lastSlash + 1);
     }
 
+    @Named("parentPath")
     default String getParentPath(String path) {
         int lastSlash = path.lastIndexOf('/');
         return lastSlash < 0 ? "" : path.substring(0, lastSlash + 1);
     }
-}
 
 }
+

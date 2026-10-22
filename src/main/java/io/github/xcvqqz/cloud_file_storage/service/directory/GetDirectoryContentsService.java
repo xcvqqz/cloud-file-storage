@@ -31,7 +31,6 @@ public class GetDirectoryContentsService {
         return minioStorage.getContentByDirectory(path);
 
 
-
     }
 
 
