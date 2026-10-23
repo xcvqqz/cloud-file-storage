@@ -311,25 +311,25 @@ public class MinioStorage implements ObjectStorage {
             for (Result<Item> result : results) {
 
                 Item item = result.get();
-                String objectName = item.objectName();
+                String absolutePath = item.objectName();
 
-                if(objectName.equals(path)){
+                if(absolutePath.equals(path)){
                     continue;
                 }
 
-                String cleanPathName = objectName.substring(objectName.indexOf("/") + 1);
+                String normalizePathName = absolutePath.substring(absolutePath.indexOf("/") + 1);
 
 
                 if (item.isDir()) {
                     resources.add(
                             DirectoryResponse.builder()
-                                    .path(cleanPathName)
+                                    .path(normalizePathName)
                                     .type(DIRECTORY)
                                     .build());
                 } else {
 
-                    String fileName = cleanPathName.substring(cleanPathName.lastIndexOf("/") + 1);
-                    String parentPath = cleanPathName.substring(0, cleanPathName.lastIndexOf("/"));
+                    String fileName = normalizePathName.substring(normalizePathName.lastIndexOf("/") + 1);
+                    String parentPath = normalizePathName.substring(0, normalizePathName.lastIndexOf("/"));
 
                     resources.add(
                             FileResponse.builder()
@@ -422,10 +422,6 @@ public class MinioStorage implements ObjectStorage {
     }
 
     public List<ResourceResponse> searchResources(String query, String userRoot)  {
-
-
-        //не отображаются папки!!!!!!!!!!!!!!!!
-
         try {
             Iterable<Result<Item>> results = minioClient.listObjects(
                     ListObjectsArgs.builder()
@@ -435,16 +431,23 @@ public class MinioStorage implements ObjectStorage {
                             .build()
             );
 
+
             List<ResourceResponse> foundResources = new ArrayList<>();
 
             for (Result<Item> result : results) {
 
                 Item item = result.get();
-                Path pathItem = Path.of(item.objectName());
 
-                String parentPath = pathItem.getParent().toString() != null ? pathItem.getParent().toString() + "/" : "";
+                String absolutePath = item.objectName();
+                String normalizePathName = absolutePath.substring(absolutePath.indexOf("/") + 1);
 
-                String fileName = pathItem.getFileName().toString() != null ? pathItem.getFileName().toString() : "";
+                String fileName = normalizePathName.substring(normalizePathName.lastIndexOf("/") + 1);
+
+                String parentPath = normalizePathName.substring(0, normalizePathName.lastIndexOf("/"));
+
+//                String parentPath = pathItem.getParent().toString() != null ? pathItem.getParent().toString() + "/" : "";
+//
+//                String fileName = pathItem.getFileName().toString() != null ? pathItem.getFileName().toString() : "";
 
                 Long size = !(item.size() == 0) ? item.size() : null;
 
@@ -453,7 +456,7 @@ public class MinioStorage implements ObjectStorage {
                 if (fileName.toLowerCase().contains(query.toLowerCase())) {
                     if (isDirectory) {
                         foundResources.add(DirectoryResponse.builder()
-                                        .path(pathItem.toString())
+                                        .path(normalizePathName)
                                         .type(DIRECTORY)
                                         .build());
                     } else {
