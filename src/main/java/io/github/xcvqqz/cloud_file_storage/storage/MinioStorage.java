@@ -441,39 +441,35 @@ public class MinioStorage implements ObjectStorage {
                 String absolutePath = item.objectName();
                 String normalizePathName = absolutePath.substring(absolutePath.indexOf("/") + 1);
 
+                if (normalizePathName.endsWith("/") && normalizePathName.toLowerCase().contains(query.toLowerCase())) {
+                    foundResources.add(DirectoryResponse.builder()
+                            .path(normalizePathName)
+                            .type(DIRECTORY)
+                            .build());
+                    continue;
+                }
+
                 String fileName = normalizePathName.substring(normalizePathName.lastIndexOf("/") + 1);
-
                 String parentPath = normalizePathName.substring(0, normalizePathName.lastIndexOf("/"));
-
-//                String parentPath = pathItem.getParent().toString() != null ? pathItem.getParent().toString() + "/" : "";
-//
-//                String fileName = pathItem.getFileName().toString() != null ? pathItem.getFileName().toString() : "";
 
                 Long size = !(item.size() == 0) ? item.size() : null;
 
-                boolean isDirectory = item.objectName().endsWith("/");
-
                 if (fileName.toLowerCase().contains(query.toLowerCase())) {
-                    if (isDirectory) {
-                        foundResources.add(DirectoryResponse.builder()
-                                        .path(normalizePathName)
-                                        .type(DIRECTORY)
-                                        .build());
-                    } else {
-                        foundResources.add(FileResponse.builder()
-                                .path(parentPath)
-                                .name(fileName)
-                                .size(size)
-                                .type(FILE)
-                                .build());
-                    }
+                    foundResources.add(FileResponse.builder()
+                            .path(parentPath)
+                            .name(fileName)
+                            .size(size)
+                            .type(FILE)
+                            .build());
                 }
             }
-
-            if(foundResources.isEmpty()){
+            if (foundResources.isEmpty()) {
                 throw new ResourceNotFoundException("No resources were found for your request, please try searching for your resource using a different keyword");
             }
             return foundResources;
+
+        } catch (ResourceNotFoundException e){
+            throw e;
         } catch (Exception e) {
             throw new StorageException("An error occurred while retrieving the list of resources for the request - '" + query + "' , please try again", e);
         }
